@@ -29,12 +29,17 @@ from llama_index.response_synthesizers import get_response_synthesizer
 from llama_index.embeddings import resolve_embed_model
 
 class DocumentProcessor:
-    def __init__(self, directory, model="gpt-3.5-turbo"):
+    def __init__(self, directory=None, model="gpt-3.5-turbo"):
         self.directory = directory
         self.model = model
 
     def load_documents_from_directory(self):
         documents = []
+        # ディレクトリがNoneの場合は、処理をスキップ
+        if self.directory is None:
+            print("No directory provided, skipping document loading.")
+            return documents
+
         for filename in os.listdir(self.directory):
             if filename.endswith(".txt"):
                 file_path = os.path.join(self.directory, filename)
@@ -48,8 +53,11 @@ class DocumentProcessor:
 
     def process_documents(self):
         documents = self.load_documents_from_directory()
-        llm = OpenAI(temperature=0.1, model=self.model, max_tokens=512)
+        # ドキュメントが空の場合は、処理をスキップ
+        if not documents:
+            return []
 
+        llm = OpenAI(temperature=0.1, model=self.model, max_tokens=512)
         text_splitter = TokenTextSplitter(separator=" ", chunk_size=512, chunk_overlap=128)
         extractors = [
             TitleExtractor(nodes=5, llm=llm),
@@ -61,6 +69,7 @@ class DocumentProcessor:
         pipeline = IngestionPipeline(transformations=[text_splitter] + extractors)
         uber_nodes = pipeline.run(documents=documents)
         return uber_nodes
+
 
 
 

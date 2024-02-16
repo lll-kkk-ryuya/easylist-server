@@ -15,7 +15,7 @@ from llama_index.retrievers import VectorIndexRetriever
 from nodes import DocumentProcessor
 
 class VectorStoreAndQueryEngine:
-    def __init__(self, document_directory=None, path="chroma_db"):
+    def __init__(self, path="chroma_db",document_directory=None):
         self.document_directory = document_directory
         self.path = path
         self.db = chromadb.PersistentClient(path=self.path)
@@ -58,7 +58,7 @@ class VectorStoreAndQueryEngine:
     def add_vector_query_engine(self, collection_name, model="gpt-4", temperature=0.4, similarity_top_k=5):
         document_processor = DocumentProcessor(directory=self.document_directory, model=model)
         nodes = document_processor.process_documents()
-        _,index = self.initialize_vector_store_index(collection_name, nodes=nodes)
+        _,index = self.initialize_vector_store_index(collection_name,nodes)
         vector_query_engine = self.initialize_vector_query_engine(index, model, temperature, similarity_top_k)
         #return vector_query_engine
         self.vector_query_engines[collection_name] = vector_query_engine

@@ -11,12 +11,12 @@ async def read_root():
 
 # 環境変数や設定値
 # インスタンスの作成に必要なパラメータ
-vector_store_path = "path/to/chroma_db"
-db_url = 'sqlite:///path/to/example.db'
-openai_api_key = "your_openai_api_key"
+vector_store_path = "chroma_db"
+db_url = 'sqlite:///example.db'
+openai_api_key = "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"
 
 # QueryEngineManagerインスタンスの作成
-qem = QueryEngineManager(vector_store_path, db_url, openai_api_key)
+qem = QueryEngineManager(vector_store_path, db_url)
 # セットアップするコレクションの名前
 collection_names = ["bunn_senn4", "keizai5", "hougakubu5", "shougakub1", "rikougakubu1"]
 qem.setup_vector_query_engines(collection_names)
