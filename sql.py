@@ -1,7 +1,7 @@
 import os
 from llama_index.llms import OpenAI
 
-os.environ["OPENAI_API_KEY"] = ""
+os.environ["OPENAI_API_KEY"] = "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"
 import openai
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
 from sqlalchemy import insert

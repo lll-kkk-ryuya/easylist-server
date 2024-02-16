@@ -17,12 +17,9 @@ from llama_index.ingestion import IngestionPipeline
 from llama_index.extractors import TitleExtractor, QuestionsAnsweredExtractor, EntityExtractor, SummaryExtractor
 from llama_index import ServiceContext
 import os
-
-os.environ["OPENAI_API_KEY"] = ""
+os.environ["OPENAI_API_KEY"] = "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"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-import os
 import chromadb
-import os
 from llama_index.llms import OpenAI
 from llama_index.text_splitter import TokenTextSplitter
 from llama_index.ingestion import IngestionPipeline
