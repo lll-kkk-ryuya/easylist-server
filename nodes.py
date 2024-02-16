@@ -18,7 +18,7 @@ from llama_index.extractors import TitleExtractor, QuestionsAnsweredExtractor, E
 from llama_index import ServiceContext
 import os
 
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = ""
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import os
 import chromadb
