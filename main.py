@@ -1,13 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from query_engines import QueryEngineManager
 import pickle
+from pydantic import BaseModel
 import os
 os.environ["OPENAI_API_KEY"] = "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"
 app = FastAPI()
 
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
+# クエリテキストを受け取るためのモデルを定義
+class Query(BaseModel):
+    query_text: str
 
 # 環境変数や設定値
 # インスタンスの作成に必要なパラメータ
@@ -55,11 +56,23 @@ qem.setup_query_engine_tools(tool_metadata)
 
 # インスタンスの作成
 # 実行するクエリのテキスト
-query_text = "文学部の一年生の必修語学科目について教えてください。"
+# query_text = "文学部の一年生の必修語学科目について教えてください。"
 
 # クエリの実行と結果の取得
-result = qem.query(query_text)
+# result = qem.query(query_text)
 
 # 結果の出力
-print(result)
+# print(result)
 
+@app.post("/query")
+async def perform_query(query: Query):
+    try:
+        # クエリの実行と結果の取得
+        result = qem.query(query.query_text)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/")
+async def read_root():
+    return {"Hello": "World"}
