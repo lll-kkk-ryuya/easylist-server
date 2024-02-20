@@ -17,8 +17,11 @@ from llama_index.ingestion import IngestionPipeline
 from llama_index.extractors import TitleExtractor, QuestionsAnsweredExtractor, EntityExtractor, SummaryExtractor
 from llama_index import ServiceContext
 import os
-os.environ["OPENAI_API_KEY"] = "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"
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+from dotenv import load_dotenv
+# .env ファイルを読み込む
+load_dotenv()
+# 環境変数 'OPENAI_API_KEY' を取得
+openai_api_key = os.getenv('OPENAI_API_KEY')
 import chromadb
 from llama_index.llms import OpenAI
 from llama_index.text_splitter import TokenTextSplitter
@@ -37,7 +40,6 @@ class DocumentProcessor:
         documents = []
         # ディレクトリがNoneの場合は、処理をスキップ
         if self.directory is None:
-            print("No directory provided, skipping document loading.")
             return documents
 
         for filename in os.listdir(self.directory):
@@ -48,7 +50,6 @@ class DocumentProcessor:
                     category = os.path.splitext(filename)[0]
                     doc = Document(text=text, metadata={"filename": filename, "category": category})
                     documents.append(doc)
-                    print(f"Loaded document: {filename}, Category: {category}")
         return documents
 
     def process_documents(self):

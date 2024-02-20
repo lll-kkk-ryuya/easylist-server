@@ -1,7 +1,10 @@
 import os
 from llama_index.llms import OpenAI
-
-os.environ["OPENAI_API_KEY"] = "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"
+from dotenv import load_dotenv
+# .env ファイルを読み込む
+load_dotenv()
+# 環境変数 'OPENAI_API_KEY' を取得
+openai_api_key = os.getenv('OPENAI_API_KEY')
 import openai
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
 from sqlalchemy import insert

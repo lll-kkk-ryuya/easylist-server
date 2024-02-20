@@ -12,7 +12,7 @@ from llama_index.embeddings import resolve_embed_model
 from llama_index.embeddings import OpenAIEmbedding
 from llama_index.query_engine import RetrieverQueryEngine
 from llama_index.retrievers import VectorIndexRetriever
-from nodes import DocumentProcessor
+from router.room.chat.nodes import DocumentProcessor
 
 class VectorStoreAndQueryEngine:
     def __init__(self, path="chroma_db",document_directory=None):
@@ -37,7 +37,6 @@ class VectorStoreAndQueryEngine:
                 service_context=service_context
                 )
         except ValueError:
-            print(f"Creating new collection: {collection_name}")
             chroma_collection = self.db.get_or_create_collection(collection_name)
             vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
             service_context = ServiceContext.from_defaults(embed_model=embed_model)

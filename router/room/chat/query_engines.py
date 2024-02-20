@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from vector_engines import VectorStoreAndQueryEngine
-from sql import NLSQLQueryEngineManager
+from router.room.chat.vector_engines import VectorStoreAndQueryEngine
+from router.room.chat.sql import NLSQLQueryEngineManager
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 from llama_index.tools import ToolMetadata
@@ -10,7 +10,13 @@ from llama_index.selectors.llm_selectors import LLMMultiSelector
 from llama_index import ServiceContext
 from llama_index.llms import OpenAI
 import os
-os.environ["OPENAI_API_KEY"] = "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"
+from dotenv import load_dotenv
+import os
+# .env ファイルを読み込む
+load_dotenv()
+# 環境変数 'OPENAI_API_KEY' を取得
+openai_api_key = os.getenv('OPENAI_API_KEY')
+
 # query_engines_dict をファイルに保存する
 class QueryEngineManager:
     def __init__(self, vector_store_path, db_url):
@@ -39,9 +45,9 @@ class QueryEngineManager:
                 )
             )
 
-    def query(self, query_text):
+    def query_engine(self):
         router_query_engine = RouterQueryEngine(
             selector=LLMMultiSelector.from_defaults(service_context=self.service_context),
-            query_engine_tools=self.query_engine_tools, verbose=True, service_context=self.service_context
+            query_engine_tools=self.query_engine_tools, verbose=False, service_context=self.service_context
         )
-        return router_query_engine.query(query_text)
+        return router_query_engine
