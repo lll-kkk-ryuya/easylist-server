@@ -72,8 +72,12 @@ async def handle_query(request: QueryRequest):
     await query_service.setup_engines()
     query_engine = await query_service.query_engine()
     result = query_engine.query(request.message)
-    print(type(result))
-    response_text=result.response
+    #print(type(result))
+    standard_response = result.get_response()
+    response_text = standard_response.response
+    # query_engine.query を呼び出して StreamingResponse オブジェクトを取得
+    print(response_text)
+    #response_text=result.response
     # チャットボットからのレスポンスを生成する（ダミー）
     #response_text = "これはダミーレスポンスです。"
     
@@ -137,3 +141,4 @@ async def handle_query(request: QueryRequest):
     response_text = query_engine.query(request.query_text)
     return {"response": f"Received text: {response_text}"}
 app.include_router(room_router)
+
