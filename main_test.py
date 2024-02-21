@@ -72,7 +72,6 @@ async def handle_query(request: QueryRequest):
     await query_service.setup_engines()
     query_engine = await query_service.query_engine()
     result = query_engine.query(request.message)
-    #print(type(result))
     standard_response = result.get_response()
     response_text = standard_response.response
     # query_engine.query を呼び出して StreamingResponse オブジェクトを取得
@@ -97,48 +96,3 @@ async def handle_query(request: QueryRequest):
     result = {"prompt_id": res['id'], "response_text": response_text,"createdAt":res["createdAt"]}
     print(result)
     return result
-
-# 他のルーターを追加する場合
-# app.include_router(room_router)
-
-
-@app.post("/query")
-async def handle_query(request: QueryRequest):
-    vector_store_path = "chroma_db"
-    db_url = 'sqlite:///example.db'
-    collection_names = ["bunn_senn4", "keizai5", "hougakubu5", "shougakub1", "rikougakubu1"]
-    table_name = "all_curce"
-    tool_metadata = {
-    "rikougakubu1": {
-        "name": "Engineering Department",
-        "description": "Provides comprehensive data excluding course information for the Engineering Department, such as enrollment requirements, graduation criteria, and advancement conditions."
-    },
-    "hougakubu5": {
-        "name": "Law Department",
-        "description": "Provides comprehensive data excluding course information for the Law Department, such as enrollment requirements, graduation criteria, and advancement conditions."
-    },
-    "keizai5": {
-        "name": "Economics Department",
-        "description": "Provides comprehensive data excluding course information for the Economics Department, such as enrollment requirements, graduation criteria, and advancement conditions."
-    },
-    "bunn_senn4": {
-        "name": "Literature Department",
-        "description": "Provides comprehensive data excluding course information for the Literature Department, such as enrollment requirements, graduation criteria, and advancement conditions."
-    },
-    "shougakub1": {
-        "name": "Commerce Department",
-        "description": "Provides comprehensive data excluding course information for the Commerce Department, such as enrollment requirements, graduation criteria, and advancement conditions."
-    },
-    "all_curce": {
-        "name": "Course Data",
-        "description": "Course data: ID, campus, name, field, term, schedule, mode, year, faculties, URL. Covers all departments and provides detailed information on each course offered."
-    }
-}
-    
-    query_service = QueryService(vector_store_path, db_url,collection_names,table_name,tool_metadata)
-    await query_service.setup_engines()
-    query_engine = await query_service.query_engine()
-    response_text = query_engine.query(request.query_text)
-    return {"response": f"Received text: {response_text}"}
-app.include_router(room_router)
-
