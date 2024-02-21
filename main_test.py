@@ -1,7 +1,7 @@
 import os
 from supabase import create_client, Client
 # main_test.py
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 # 正しいrouterインスタンスのインポート
@@ -32,7 +32,7 @@ class QueryRequest(BaseModel):
 
 class ResponseModel(BaseModel):
     prompt_id: int  # 生成されたプロンプトID
-    response_text: str  # チャットボットからのレスポンス
+    reply_from_bot: str  # チャットボットからのレスポンス
 
 @app.post("/prompt", response_model=ResponseModel)
 async def handle_query(request: QueryRequest):
@@ -73,9 +73,9 @@ async def handle_query(request: QueryRequest):
     query_engine = await query_service.query_engine()
     result = query_engine.query(request.message)
     standard_response = result.get_response()
-    response_text = standard_response.response
+    reply_from_bot = standard_response.response
     # query_engine.query を呼び出して StreamingResponse オブジェクトを取得
-    print(response_text)
+    print(reply_from_bot)
     #response_text=result.response
     # チャットボットからのレスポンスを生成する（ダミー）
     #response_text = "これはダミーレスポンスです。"
@@ -85,7 +85,7 @@ async def handle_query(request: QueryRequest):
         "chatRoomId": request.chatroom_id,
         "userId": request.user_id,
         "message": request.message,
-        "replyFromBot": response_text
+        "replyFromBot": reply_from_bot
     }
     inserted_prompt = supabase.table("Prompt").insert(prompt_data).execute()
     #if inserted_prompt.error:
@@ -93,6 +93,42 @@ async def handle_query(request: QueryRequest):
     res = inserted_prompt.data[0]
 
 
-    result = {"prompt_id": res['id'], "response_text": response_text,"createdAt":res["createdAt"]}
+    result = {"prompt_id": res['id'], "reply_from_bot": reply_from_bot,"createdAt":res["createdAt"]}
     print(result)
     return result
+
+# 他のルーターを追加する場合
+# app.include_router(room_router)
+@app.delete("/chatroom/{chatroom_id}")
+async def delete_chatroom(chatroom_id: str):
+    delete_result = supabase.table("ChatRoom").delete().eq("id", chatroom_id).execute()
+
+    return {"message": "チャットルームが正常に削除されました。"}
+
+
+@app.get("/chatroom/{chatroom_id}/history")
+async def get_chat_history(chatroom_id: str):
+    history = supabase.table("Prompt").select("*").eq("chatRoomId", chatroom_id).execute()
+    if history.error:
+        raise HTTPException(status_code=500, detail="履歴の取得に失敗しました。")
+    return history.data
+
+
+class ChatRoomCreate(BaseModel):
+    name: str
+    userId: str
+
+@app.post("/chatroom/create")
+async def create_chatroom(request: ChatRoomCreate):
+    chatroom = supabase.table("ChatRoom").insert({"name": request.name, "userId": request.userId}).execute()
+    if chatroom.error:
+        raise HTTPException(status_code=500, detail="チャットルームの作成に失敗しました。")
+    return chatroom.data
+
+#リアルタイム通信
+@app.websocket("/ws/{chatroom_id}")
+async def websocket_endpoint(websocket: WebSocket, chatroom_id: str):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data} in chatroom {chatroom_id}")
