@@ -10,7 +10,8 @@ url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
-@app.get("/users/")
+@app.get("/")
 async def read_root():
     users = await supabase.table('User').select("*").execute()
-    return users
+    print("hello")
+    return {"message": "Hello World From Fast API"}

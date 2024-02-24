@@ -101,13 +101,7 @@ async def handle_query(request: QueryRequest):
 # app.include_router(room_router)
 @app.delete("/chatroom/{chatroom_id}")
 async def delete_chatroom(chatroom_id: str):
-<<<<<<< HEAD
-    delete_result = supabase.table("ChatRoom").delete().eq("id", chatroom_id).execute()
 
-    return {"message": "チャットルームが正常に削除されました。"}
-
-
-=======
     # 関連するプロンプトを削除
     delete_prompts_result = supabase.table("Prompt").delete().eq("chatRoomId", chatroom_id).execute()
 
@@ -116,8 +110,6 @@ async def delete_chatroom(chatroom_id: str):
     return {"message": "チャットルームが正常に削除されました。"}
 
 
-
->>>>>>> dc6b8f0 (create vercel.json)
 @app.get("/chatroom/{chatroom_id}/history")
 async def get_chat_history(chatroom_id: str):
     history = supabase.table("Prompt").select("*").eq("chatRoomId", chatroom_id).execute()
@@ -133,11 +125,6 @@ class ChatRoomCreate(BaseModel):
 @app.post("/chatroom/create")
 async def create_chatroom(request: ChatRoomCreate):
     chatroom = supabase.table("ChatRoom").insert({"name": request.name, "userId": request.userId}).execute()
-<<<<<<< HEAD
-    if chatroom.error:
-        raise HTTPException(status_code=500, detail="チャットルームの作成に失敗しました。")
-=======
->>>>>>> dc6b8f0 (create vercel.json)
     return chatroom.data
 
 #リアルタイム通信
@@ -146,8 +133,6 @@ async def websocket_endpoint(websocket: WebSocket, chatroom_id: str):
     await websocket.accept()
     while True:
         data = await websocket.receive_text()
-<<<<<<< HEAD
+
         await websocket.send_text(f"Message text was: {data} in chatroom {chatroom_id}")
-=======
-        await websocket.send_text(f"Message text was: {data} in chatroom {chatroom_id}")
->>>>>>> dc6b8f0 (create vercel.json)
+
