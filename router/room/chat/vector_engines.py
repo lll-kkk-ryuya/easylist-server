@@ -4,7 +4,6 @@ from llama_index import (
     VectorStoreIndex, 
     ServiceContext,
 )
-from llama_index.vector_stores import ChromaVectorStore
 from llama_index.llms import OpenAI
 from llama_index.storage.storage_context import StorageContext
 from llama_index.response_synthesizers import get_response_synthesizer

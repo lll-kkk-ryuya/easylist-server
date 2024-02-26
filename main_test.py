@@ -5,7 +5,6 @@ from fastapi import FastAPI, WebSocket
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 # 正しいrouterインスタンスのインポート
-from router.room.room_router import router as room_router
 from router.room.chat.mainbot import QueryService
 
 url: str = os.environ.get("SUPABASE_URL")

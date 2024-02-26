@@ -4,13 +4,6 @@ from llama_index.query_engine import RetrieverQueryEngine
 
 from llama_index.retrievers import VectorIndexRetriever
 
-import openai
-import chromadb
-
-from llama_index.query_engine import RetrieverQueryEngine
-from llama_index.vector_stores import ChromaVectorStore
-from llama_index.storage.storage_context import StorageContext
-from llama_index.embeddings import OpenAIEmbedding
 from llama_index.llms import OpenAI
 from llama_index.text_splitter import TokenTextSplitter
 from llama_index.ingestion import IngestionPipeline
