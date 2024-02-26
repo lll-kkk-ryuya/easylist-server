@@ -1,9 +1,13 @@
 
 fastapi==0.110.0
+
 llama-index==0.9.28.post2
+
 
 pydantic==2.6.2
 python-dotenv==1.0.1
 SQLAlchemy==2.0.25
 supabase==2.3.6
+
 onnxruntime==1.9.0
+
