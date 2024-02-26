@@ -18,12 +18,6 @@ app = FastAPI()
 from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
 
-# 環境変数からSupabaseの情報を取得
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
-
-app = FastAPI()
 
 class QueryRequest(BaseModel):
     user_id: str  # ユーザーID
@@ -37,28 +31,27 @@ class ResponseModel(BaseModel):
 @app.post("/prompt", response_model=ResponseModel)
 async def handle_query(request: QueryRequest):
     #チャットボットの処理
-    vector_store_path = "chroma_db"
     db_url = 'sqlite:///example.db'
-    collection_names = ["bunn_senn4", "keizai5", "hougakubu5", "shougakub1", "rikougakubu1"]
+    collection_names = ["bunngakubu", "keizai", "法学部", "shougakub", "rikougakubu"]
     table_name = "all_curce"
     tool_metadata = {
-    "rikougakubu1": {
+    "rikougakubu": {
         "name": "Engineering Department",
         "description": "Provides comprehensive data excluding course information for the Engineering Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
-    "hougakubu5": {
+    "法学部": {
         "name": "Law Department",
         "description": "Provides comprehensive data excluding course information for the Law Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
-    "keizai5": {
+    "keizai": {
         "name": "Economics Department",
         "description": "Provides comprehensive data excluding course information for the Economics Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
-    "bunn_senn4": {
+    "bunngakubu": {
         "name": "Literature Department",
         "description": "Provides comprehensive data excluding course information for the Literature Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
-    "shougakub1": {
+    "shougakub": {
         "name": "Commerce Department",
         "description": "Provides comprehensive data excluding course information for the Commerce Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
@@ -68,7 +61,7 @@ async def handle_query(request: QueryRequest):
     }
 }
     
-    query_service = QueryService(vector_store_path, db_url,collection_names,table_name,tool_metadata)
+    query_service = QueryService(db_url,collection_names,table_name,tool_metadata)
     await query_service.setup_engines()
     query_engine = await query_service.query_engine()
     result = query_engine.query(request.message)

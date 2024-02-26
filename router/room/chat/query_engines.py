@@ -19,8 +19,8 @@ openai_api_key = os.getenv('OPENAI_API_KEY')
 
 # query_engines_dict をファイルに保存する
 class QueryEngineManager:
-    def __init__(self, vector_store_path, db_url):
-        self.vector_store_query_engine_manager = VectorStoreAndQueryEngine(path=vector_store_path)
+    def __init__(self, db_url):
+        self.vector_store_query_engine_manager = VectorStoreAndQueryEngine()
         self.engine = create_engine(db_url, echo=True)
         self.nlsql_manager = NLSQLQueryEngineManager(engine=self.engine)
         self.query_engines_dict = {}

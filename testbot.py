@@ -1,28 +1,27 @@
 # 使用例
 from router.room.chat.mainbot import QueryService
 async def main():
-    vector_store_path = "chroma_db"
     db_url = 'sqlite:///example.db'
-    collection_names = ["bunn_senn4", "keizai5", "hougakubu5", "shougakub1", "rikougakubu1"]
+    collection_names = ["bunngakubu", "keizai", "法学部", "shougakub", "rikougakubu"]
     table_name = "all_curce"
     tool_metadata = {
-    "rikougakubu1": {
+    "rikougakubu": {
         "name": "Engineering Department",
         "description": "Provides comprehensive data excluding course information for the Engineering Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
-    "hougakubu5": {
+    "法学部": {
         "name": "Law Department",
         "description": "Provides comprehensive data excluding course information for the Law Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
-    "keizai5": {
+    "keizai": {
         "name": "Economics Department",
         "description": "Provides comprehensive data excluding course information for the Economics Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
-    "bunn_senn4": {
+    "bunngakubu": {
         "name": "Literature Department",
         "description": "Provides comprehensive data excluding course information for the Literature Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
-    "shougakub1": {
+    "shougakub": {
         "name": "Commerce Department",
         "description": "Provides comprehensive data excluding course information for the Commerce Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
@@ -32,7 +31,7 @@ async def main():
     }
 }
     
-    query_service = QueryService(vector_store_path, db_url,collection_names,table_name,tool_metadata)
+    query_service = QueryService(db_url,collection_names,table_name,tool_metadata)
     await query_service.setup_engines()
     query_engine = await query_service.query_engine()
     query_text = "文学部の一年生の必修語学科目について教えてください。"
@@ -40,6 +39,7 @@ async def main():
     print(type(result))
     result=result.response
     print(type(result))
+    print(result)
 
 # 非同期の main 関数を実行
 import asyncio

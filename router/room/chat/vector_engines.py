@@ -13,12 +13,12 @@ from llama_index.embeddings import OpenAIEmbedding
 from llama_index.query_engine import RetrieverQueryEngine
 from llama_index.retrievers import VectorIndexRetriever
 from router.room.chat.nodes import DocumentProcessor
+from llama_index.vector_stores.supabase import SupabaseVectorStore
+postgres_connection_string: str = os.environ.get("POSTGRES_KEY")
 
 class VectorStoreAndQueryEngine:
     def __init__(self, path="chroma_db",document_directory=None):
         self.document_directory = document_directory
-        self.path = path
-        self.db = chromadb.PersistentClient(path=self.path)
         self.vector_query_engines = {}
 
     def initialize_vector_store_index(self, collection_name, nodes=None, embed_batch_size=64):
@@ -29,20 +29,18 @@ class VectorStoreAndQueryEngine:
                 entities_str = ', '.join(node.metadata['entities'])
                 node.metadata['entities'] = entities_str
         try:
-            chroma_collection = self.db.get_collection(collection_name)
-            vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+            vector_store = SupabaseVectorStore(
+                postgres_connection_string=postgres_connection_string,
+                collection_name=collection_name
+            )
             service_context = ServiceContext.from_defaults(embed_model=embed_model)
+        
             index = VectorStoreIndex.from_vector_store(
                 vector_store,
                 service_context=service_context
-                )
+            )
         except ValueError:
-            chroma_collection = self.db.get_or_create_collection(collection_name)
-            vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-            service_context = ServiceContext.from_defaults(embed_model=embed_model)
-            storage_context = StorageContext.from_defaults(vector_store=vector_store)
-            index = VectorStoreIndex(nodes=nodes, storage_context=storage_context, service_context=service_context)
-        # nodes内のentitiesリストを文字列に変換
+            print("エラー")
         return collection_name, index
 
     def initialize_vector_query_engine(self, index, model="gpt-4", temperature=0.1, similarity_top_k=5):

@@ -1,14 +1,13 @@
 from router.room.chat.query_engines import QueryEngineManager
 
 class QueryService:
-    def __init__(self, vector_store_path: str, db_url: str, collection_names: list, table_name: str, tool_metadata: dict):
-        self.vector_store_path = vector_store_path
+    def __init__(self, db_url: str, collection_names: list, table_name: str, tool_metadata: dict):
         self.db_url = db_url
         self.collection_names = collection_names
         self.table_name = table_name
         self.tool_metadata = tool_metadata
         # QueryEngineManagerのインスタンス化は同期的に行われます
-        self.qem = QueryEngineManager(self.vector_store_path, self.db_url)
+        self.qem = QueryEngineManager( self.db_url)
 
     async def setup_engines(self):
         # セットアップ処理を非同期で実行する
