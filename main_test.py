@@ -1,35 +1,42 @@
 import os
 from supabase import create_client, Client
+from cors_config import add_cors_middleware
+from llama_index.core.response.schema import Response, StreamingResponse
 # main_test.py
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 # 正しいrouterインスタンスのインポート
 from router.room.chat.mainbot import QueryService
 import uuid
+from typing import Optional
+from uuid import uuid4
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 app = FastAPI()
-# 正しくrouterをアプリケーションに追加
-
-from fastapi import FastAPI, HTTPException
-from supabase import create_client, Client
+add_cors_middleware(app)
 
 
 class QueryRequest(BaseModel):
-    user_id: str  # ユーザーID
-    chatroom_id: str # チャットルームID
+    user_id: Optional[str] = None  # ユーザーID
+    chatroom_id: Optional[str] = None # チャットルームID
     message: str  # ユーザーからのメッセージ
 
 class ResponseModel(BaseModel):
     prompt_id: int  # 生成されたプロンプトID
     reply_from_bot: str  # チャットボットからのレスポンス
 
+
+
+    
+
 @app.post("/prompt", response_model=ResponseModel)
 async def handle_query(request: QueryRequest):
+    if chatroom_id is None:
+        chatroom_id = str(uuid4())
     #チャットボットの処理
     db_url = 'sqlite:///example.db'
     collection_names = ["bunngakubu", "keizai", "法学部", "shougakub", "rikougakubu"]
@@ -65,27 +72,30 @@ async def handle_query(request: QueryRequest):
     await query_service.setup_engines()
     query_engine = await query_service.query_engine()
     result = query_engine.query(request.message)
-    reply_from_bot = result.response
-    # query_engine.query を呼び出して StreamingResponse オブジェクトを取得
-    print(reply_from_bot)
-    #response_text=result.response
-    # チャットボットからのレスポンスを生成する（ダミー）
-    #response_text = "これはダミーレスポンスです。"
-    
+    if isinstance(result, Response):
+        print("resultはResponse型です。")
+        reply_from_bot = result.response
+    elif isinstance(result, StreamingResponse):
+        print("resultはStreamingResponse型です。")
+        reply_from_bot = result.get_response().response
+        #reply_from_bot = response_object.response_txt
+    else:
+        print("resultは未知の型です。")
+        reply_from_bot = "エラー: 未知のレスポンスタイプ"
+    print(type(result))
     # Promptテーブルにユーザーのクエリとレスポンスを保存
     prompt_data = {
-        "chatRoomId": request.chatroom_id,
-        "userId": request.user_id,
+        "chatRoomId": chatroom_id,
+        "userId": request.user_id if request.user_id is not None else "default_user_id",
         "message": request.message,
-        "replyFromBot": reply_from_bot
+        "replyFromBot": reply_from_bot  # チャットボットの応答
     }
     inserted_prompt = supabase.table("Prompt").insert(prompt_data).execute()
-    #if inserted_prompt.error:
-        #raise HTTPException(status_code=400, detail="プロンプトの保存に失敗しました。")
-    res = inserted_prompt.data[0]
+    if inserted_prompt.error():
+        raise HTTPException(status_code=400, detail="Failed to save prompt.")
 
 
-    result = {"prompt_id": res['id'], "reply_from_bot": reply_from_bot,"createdAt":res["createdAt"]}
+    result = {"prompt_id": inserted_prompt['id'], "reply_from_bot": reply_from_bot,"createdAt":inserted_prompt["createdAt"]}
     print(result)
     return result
 
@@ -102,31 +112,27 @@ async def delete_chatroom(chatroom_id: str):
     return {"message": "チャットルームが正常に削除されました。"}
 
 
-@app.get("/chatroom/{chatroom_id}/history")
-async def get_chat_history(chatroom_id: str):
-    history = supabase.table("Prompt").select("*").eq("chatRoomId", chatroom_id).execute()
-    if history.error:
-        raise HTTPException(status_code=500, detail="履歴の取得に失敗しました。")
-    return history.data
 
-
-class ChatRoomCreate(BaseModel):
-    name: str
-    userId: str
 
 @app.post("/chatroom/create")
-async def create_chatroom(request: ChatRoomCreate):
-    # UUIDを生成
+async def create_chatroom(chatroom_name: Optional[str] = None, user_id: Optional[str] = None):
     id_value = str(uuid.uuid4())
-    # 生成したUUIDを使用してデータを挿入
-    chatroom = supabase.table("ChatRoom").insert({
-        "id": id_value,  # UUIDをidとして設定
-        "name": request.name,
-        "userId": request.userId
+    response = supabase.table("ChatRoom").insert({
+        "id": id_value,
+        "name": chatroom_name if chatroom_name else "Untitled Chatroom",
+        "userId": user_id
     }).execute()
-    return chatroom.data
+
+    # レスポンスから error をチェック
+    if response.error is not None:
+        raise HTTPException(status_code=400, detail="Chatroom creation failed.")
+
+    # エラーがなければ、chatroom のIDを含むレスポンスを返す
+    return {"id": id_value}
+
 
 #リアルタイム通信
+#StreamingResponseのprint_response_streamという関数は文字を一つ一つ出現させることが可能
 @app.websocket("/ws/{chatroom_id}")
 async def websocket_endpoint(websocket: WebSocket, chatroom_id: str):
     await websocket.accept()
