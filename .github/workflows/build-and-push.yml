@@ -1,8 +1,9 @@
 name: Build and Push to GAR
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches:
+      - main
 
 jobs:
   build-and-push:
