@@ -14,6 +14,7 @@ from llama_index.retrievers import VectorIndexRetriever
 from router.room.chat.nodes import DocumentProcessor
 from llama_index.vector_stores.supabase import SupabaseVectorStore
 postgres_connection_string: str = os.environ.get("POSTGRES_KEY")
+from llama_index.vector_stores import ChromaVectorStore
 
 class VectorStoreAndQueryEngine:
     def __init__(self, path="chroma_db",document_directory=None):
@@ -23,24 +24,26 @@ class VectorStoreAndQueryEngine:
     def initialize_vector_store_index(self, collection_name, nodes=None, embed_batch_size=64):
         base_embed_model = resolve_embed_model("local:BAAI/bge-small-en")
         embed_model = OpenAIEmbedding(embed_batch_size=embed_batch_size)
+        db = chromadb.PersistentClient(path="chroma_db")
         for node in nodes:
             if 'entities' in node.metadata and isinstance(node.metadata['entities'], list):
                 entities_str = ', '.join(node.metadata['entities'])
                 node.metadata['entities'] = entities_str
         try:
-            vector_store = SupabaseVectorStore(
-                postgres_connection_string=postgres_connection_string,
-                collection_name=collection_name
-            )
+            chroma_collection = db.get_collection(collection_name)
+            vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+            storage_context = StorageContext.from_defaults(vector_store=vector_store)
             service_context = ServiceContext.from_defaults(embed_model=embed_model)
-        
-            index = VectorStoreIndex.from_vector_store(
-                vector_store,
-                service_context=service_context
-            )
-        except ValueError:
-            print("エラー")
-        return collection_name, index
+            index = VectorStoreIndex.from_vector_store(vector_store, service_context=service_context, storage_context=storage_context)
+            return collection_name, index
+        except ValueError as e:
+            print("エンべディング開始")
+            chroma_collection = db.get_or_create_collection(collection_name)# Initialize vector store and storage context
+            vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+            storage_context = StorageContext.from_defaults(vector_store=vector_store)
+            service_context = ServiceContext.from_defaults(embed_model=embed_model)
+            index = VectorStoreIndex(nodes=nodes, storage_context=storage_context, service_context=service_context)
+
 
     def initialize_vector_query_engine(self, index, model="gpt-4", temperature=0.1, similarity_top_k=5):
         llm = OpenAI(model=model, temperature=temperature)

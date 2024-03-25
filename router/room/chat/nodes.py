@@ -1,14 +1,8 @@
 
-
-from llama_index.query_engine import RetrieverQueryEngine
-
-from llama_index.retrievers import VectorIndexRetriever
-
 from llama_index.llms import OpenAI
 from llama_index.text_splitter import TokenTextSplitter
 from llama_index.ingestion import IngestionPipeline
 from llama_index.extractors import TitleExtractor, QuestionsAnsweredExtractor, EntityExtractor, SummaryExtractor
-from llama_index import ServiceContext
 import os
 from dotenv import load_dotenv
 # .env ファイルを読み込む
@@ -21,8 +15,6 @@ from llama_index.text_splitter import TokenTextSplitter
 from llama_index.ingestion import IngestionPipeline
 from llama_index.extractors import TitleExtractor, QuestionsAnsweredExtractor, EntityExtractor, SummaryExtractor
 from llama_index import Document
-from llama_index.response_synthesizers import get_response_synthesizer
-from llama_index.embeddings import resolve_embed_model
 
 class DocumentProcessor:
     def __init__(self, directory=None, model="gpt-3.5-turbo"):

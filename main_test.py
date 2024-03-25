@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 # 正しいrouterインスタンスのインポート
 from router.room.chat.mainbot import QueryService
+import uuid
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -64,8 +65,7 @@ async def handle_query(request: QueryRequest):
     await query_service.setup_engines()
     query_engine = await query_service.query_engine()
     result = query_engine.query(request.message)
-    standard_response = result.get_response()
-    reply_from_bot = standard_response.response
+    reply_from_bot = result.response
     # query_engine.query を呼び出して StreamingResponse オブジェクトを取得
     print(reply_from_bot)
     #response_text=result.response
@@ -102,12 +102,6 @@ async def delete_chatroom(chatroom_id: str):
     return {"message": "チャットルームが正常に削除されました。"}
 
 
-@app.get("/chatroom/{chatroom_id}/history")
-async def get_chat_history(chatroom_id: str):
-    history = supabase.table("Prompt").select("*").eq("chatRoomId", chatroom_id).execute()
-    if history.error:
-        raise HTTPException(status_code=500, detail="履歴の取得に失敗しました。")
-    return history.data
 
 
 class ChatRoomCreate(BaseModel):
@@ -116,7 +110,14 @@ class ChatRoomCreate(BaseModel):
 
 @app.post("/chatroom/create")
 async def create_chatroom(request: ChatRoomCreate):
-    chatroom = supabase.table("ChatRoom").insert({"name": request.name, "userId": request.userId}).execute()
+    # UUIDを生成
+    id_value = str(uuid.uuid4())
+    # 生成したUUIDを使用してデータを挿入
+    chatroom = supabase.table("ChatRoom").insert({
+        "id": id_value,  # UUIDをidとして設定
+        "name": request.name,
+        "userId": request.userId
+    }).execute()
     return chatroom.data
 
 #リアルタイム通信

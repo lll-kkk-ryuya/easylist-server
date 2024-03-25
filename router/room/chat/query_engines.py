@@ -1,8 +1,7 @@
-from fastapi import FastAPI
+
 from router.room.chat.vector_engines import VectorStoreAndQueryEngine
 from router.room.chat.sql import NLSQLQueryEngineManager
 from sqlalchemy import create_engine
-from sqlalchemy import MetaData
 from llama_index.tools import ToolMetadata
 from llama_index.tools.query_engine import QueryEngineTool
 from llama_index.query_engine.router_query_engine import RouterQueryEngine
@@ -48,6 +47,6 @@ class QueryEngineManager:
     def query_engine(self):
         router_query_engine = RouterQueryEngine(
             selector=LLMMultiSelector.from_defaults(service_context=self.service_context),
-            query_engine_tools=self.query_engine_tools, verbose=False, service_context=self.service_context
+            query_engine_tools=self.query_engine_tools, verbose=True, service_context=self.service_context
         )
         return router_query_engine
