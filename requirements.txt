@@ -7,3 +7,4 @@ python-dotenv==1.0.1
 SQLAlchemy==2.0.25
 supabase==2.3.8
 chromadb==0.4.16
+uvicorn==0.15.0
