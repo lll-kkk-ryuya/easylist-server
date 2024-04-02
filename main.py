@@ -1,8 +1,8 @@
 import os
 from supabase import create_client, Client
 from cors_config import add_cors_middleware
-from llama_index.core.response.schema import Response, StreamingResponse
 # main_test.py
+from llama_index.core.response.schema import Response, StreamingResponse
 from starlette.responses import Response as StarletteResponse
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import JSONResponse
@@ -140,99 +140,3 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         # WebSocketの接続がクライアントによって閉じられた場合
         print("WebSocket connection was closed")
-
-
-@app.post("/prompt", response_model=ResponseModel)
-async def handle_query(request: QueryRequest):
-    chatroom_id = request.chatroom_id
-    if chatroom_id is None or chatroom_id == "":
-        chatroom_response = await create_chatroom()
-        chatroom_id = chatroom_response['id']  # 新しいチャットルームIDを取得して設定
-    # userIdがNoneまたは空文字列の場合の処理を確認
-    user_id = request.user_id if request.user_id not in [None, ""] else None
-    #チャットボットの処理
-    #result = query_engine.query(request.message)
-    if isinstance(result, Response):
-        print("resultはResponse型です。")
-        reply_from_bot = result.response
-    elif isinstance(result, StreamingResponse):
-        print("resultはStreamingResponse型です。")
-        reply_from_bot = result.get_response().response
-        #reply_from_bot = result.response_txt  一つずつ単語を抽出
-    else:
-        print("resultは未知の型です。")
-        reply_from_bot = "エラー: 未知のレスポンスタイプ"
-    print(type(result))
-    # Promptテーブルにユーザーのクエリとレスポンスを保存
-    prompt_data = {
-        "chatRoomId": chatroom_id,
-        "userId": user_id,  # 修正されたuserIdを使用
-        "message": request.message,
-        "replyFromBot": reply_from_bot
-    }
-    inserted_prompt = supabase.table("Prompt").insert(prompt_data).execute()
-    if inserted_prompt.data:
-        prompt_id = str(inserted_prompt.data[0].get('id'))
-        createdAt = inserted_prompt.data[0].get('createdAt')
-        result = {"prompt_id": prompt_id, "reply_from_bot": reply_from_bot, "createdAt": createdAt}
-    print(result)
-    return result
-
-
-
-@app.post("/prompt_test", response_model=ResponseModel)
-async def handle_querytest(request: QueryRequest):
-    reply_from_bot="レスです"
-    chatroom_id = request.chatroom_id
-    if chatroom_id is None or chatroom_id == "":
-        chatroom_response = await create_chatroom()
-        chatroom_id = chatroom_response['id']  # 新しいチャットルームIDを取得して設定
-    # userIdがNoneまたは空文字列の場合の処理を確認
-    user_id = request.user_id if request.user_id not in [None, ""] else None
-
-    prompt_data = {
-        "chatRoomId": chatroom_id,
-        "userId": user_id,  # 修正されたuserIdを使用
-        "message": request.message,
-        "replyFromBot": reply_from_bot
-    }
-    inserted_prompt = supabase.table("Prompt").insert(prompt_data).execute()
-    if inserted_prompt.data:
-        prompt_id = str(inserted_prompt.data[0].get('id'))
-        createdAt = inserted_prompt.data[0].get('createdAt')
-        result = {"prompt_id": prompt_id, "reply_from_bot": reply_from_bot, "createdAt": createdAt}
-
-    print(result)
-    return result
-
-# 他のルーターを追加する場合
-# app.include_router(room_router)
-@app.delete("/chatroom/{chatroom_id}")
-async def delete_chatroom(chatroom_id: str):
-
-    # 関連するプロンプトを削除
-    delete_prompts_result = supabase.table("Prompt").delete().eq("chatRoomId", chatroom_id).execute()
-
-    # チャットルームを削除
-    delete_result = supabase.table("ChatRoom").delete().eq("id", chatroom_id).execute()
-    return {"message": "チャットルームが正常に削除されました。"}
-
-class ChatroomRequest(BaseModel):
-    chatroom_id: Optional[str] = None
-    user_id: Optional[str] = None
-    name: Optional[str] = None
-
-async def create_chatroom(chatroom_id: Optional[str] = None, user_id: Optional[str] = None, name: Optional[str] = None):
-    id_value = str(uuid4())
-    # ここにデータベース挿入のロジックを実装する
-    # デモ用には、ダミーのレスポンスを返します
-    chatroom_id = chatroom_id if chatroom_id else id_value
-    name=name if name else "Untitled Chatroom"
-    loop = asyncio.get_running_loop()
-    response = await loop.run_in_executor(None, lambda: supabase.table("ChatRoom").insert({
-        "id": chatroom_id,
-        "name": name,
-        "userId": user_id
-    }).execute())
-
-    return {"id": chatroom_id, "name": name, "userId": user_id}
