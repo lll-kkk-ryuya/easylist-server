@@ -12,10 +12,11 @@ COPY . .
 
 # 依存関係をインストール
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir uvicorn==0.15.0
+RUN pip install --no-cache-dir "uvicorn[standard]>=0.18.3"
+RUN pip install --upgrade pip
 
 # コンテナ起動時に実行するコマンドを指定
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8080"]
 
 
 
