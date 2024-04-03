@@ -11,7 +11,7 @@ WORKDIR /app
 COPY . .
 
 # 依存関係をインストール
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # コンテナ起動時に実行するコマンドを指定
 CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port $PORT"]
