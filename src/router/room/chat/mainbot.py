@@ -1,4 +1,4 @@
-from router.room.chat.query_engines import QueryEngineManager
+from src.router.room.chat.query_engines import QueryEngineManager
 
 class QueryService:
     def __init__(self, db_url: str, collection_names: list, table_name: str, tool_metadata: dict):

@@ -11,7 +11,7 @@ from llama_index.embeddings import resolve_embed_model
 from llama_index.embeddings import OpenAIEmbedding
 from llama_index.query_engine import RetrieverQueryEngine
 from llama_index.retrievers import VectorIndexRetriever
-from router.room.chat.nodes import DocumentProcessor
+from src.router.room.chat.nodes import DocumentProcessor
 from llama_index.vector_stores.supabase import SupabaseVectorStore
 postgres_connection_string: str = os.environ.get("POSTGRES_KEY")
 from llama_index.vector_stores import ChromaVectorStore

@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 # 正しいrouterインスタンスのインポート
-from router.room.chat.mainbot import QueryService
+from src.router.room.chat.mainbot import QueryService
 import json
 from typing import Optional
 from uuid import uuid4, UUID
