@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  PROJECT_ID: your-google-cloud-project-id
+  PROJECT_ID: easylistbot
   IMAGE_NAME: easylistbot
   SERVICE_NAME: easylistbot
   REGION: asia-northeast1
