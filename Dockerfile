@@ -4,8 +4,6 @@ FROM python:3.9.7-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y sqlite3 && \
-    sqlite3 --version
 
 # 慣例に従った作業ディレクトリを設定
 WORKDIR /app
