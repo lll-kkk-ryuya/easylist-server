@@ -43,7 +43,7 @@ class DocumentProcessor:
         if not documents:
             return []
 
-        llm = OpenAI(temperature=0.1, model=self.model, max_tokens=512)
+        llm = OpenAI(temperature=0.1, model=self.model, max_tokens=512,api_key=openai_api_key)
         text_splitter = TokenTextSplitter(separator=" ", chunk_size=512, chunk_overlap=128)
         extractors = [
             TitleExtractor(nodes=5, llm=llm),

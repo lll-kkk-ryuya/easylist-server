@@ -13,6 +13,10 @@ from llama_index.query_engine import RetrieverQueryEngine
 from llama_index.retrievers import VectorIndexRetriever
 from src.router.room.chat.nodes import DocumentProcessor
 from llama_index.vector_stores import ChromaVectorStore
+from dotenv import load_dotenv
+load_dotenv()
+# 環境変数 'OPENAI_API_KEY' を取得
+openai_api_key = os.getenv('OPENAI_API_KEY')
 
 class VectorStoreAndQueryEngine:
     def __init__(self, path="chroma_db",document_directory=None):
@@ -20,7 +24,7 @@ class VectorStoreAndQueryEngine:
         self.vector_query_engines = {}
 
     def initialize_vector_store_index(self, collection_name, nodes=None, embed_batch_size=64):
-        embed_model = OpenAIEmbedding(embed_batch_size=embed_batch_size)
+        embed_model = OpenAIEmbedding(embed_batch_size=embed_batch_size ,api_key=openai_api_key )
         db = chromadb.PersistentClient(path="chroma_db")
         for node in nodes:
             if 'entities' in node.metadata and isinstance(node.metadata['entities'], list):
@@ -43,7 +47,7 @@ class VectorStoreAndQueryEngine:
 
 
     def initialize_vector_query_engine(self, index, model="gpt-4", temperature=0.1, similarity_top_k=5):
-        llm = OpenAI(model=model, temperature=temperature)
+        llm = OpenAI(model=model, temperature=temperature,api_key=openai_api_key )
         service_context = ServiceContext.from_defaults(llm=llm)
         vector_retriever = VectorIndexRetriever(index=index, similarity_top_k=similarity_top_k)
 

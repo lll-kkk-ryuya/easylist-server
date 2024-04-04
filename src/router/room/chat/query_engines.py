@@ -24,7 +24,7 @@ class QueryEngineManager:
         self.nlsql_manager = NLSQLQueryEngineManager(engine=self.engine)
         self.query_engines_dict = {}
         self.query_engine_tools = []
-        self.llm = OpenAI(temperature=0.2, model="gpt-4")
+        self.llm = OpenAI(temperature=0.2, model="gpt-4",api_key=openai_api_key)
         self.service_context = ServiceContext.from_defaults(llm=self.llm)
 
     def setup_vector_query_engines(self, collection_names):
