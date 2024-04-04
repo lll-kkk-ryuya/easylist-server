@@ -11,3 +11,4 @@ testbot.py
 src/__pycache__/
 src/*_test.py
 *.md
+.env
