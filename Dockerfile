@@ -1,31 +1,34 @@
 FROM python:3.9.7-slim
 
-# 不要なファイルリストを削除
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+# 必要なパッケージをインストール
+RUN apt-get update && \
+    apt-get install -y wget build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
-# SQLite3の最新版をソースからビルドしてインストールするためのステップ
-RUN apt-get update && apt-get install -y wget build-essential && \
-    wget https://www.sqlite.org/2023/sqlite-autoconf-3390200.tar.gz && \
-    tar xvfz sqlite-autoconf-3390200.tar.gz && \
-    cd sqlite-autoconf-3390200 && \
+# SQLiteの最新版をダウンロードしてビルド
+RUN wget https://www.sqlite.org/2024/sqlite-autoconf-3450200.tar.gz && \
+    tar xvfz sqlite-autoconf-3450200.tar.gz && \
+    cd sqlite-autoconf-3450200 && \
     ./configure --prefix=/usr/local && \
-    make && make install && \
-    sqlite3 --version
+    make && make install
 
+# SQLiteのバージョンを確認
+RUN sqlite3 --version
 
 # 慣例に従った作業ディレクトリを設定
 WORKDIR /app
 
+# 現在のディレクトリ内のすべてのファイルとディレクトリをコピー
 COPY . .
 
 # 依存関係をインストール
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir "uvicorn[standard]>=0.18.3"
 
-
 # コンテナ起動時に実行するコマンドを指定
-CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port $PORT --log-level debug"]
+CMD sh -c "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8080} --log-level debug"
+
+
 
 
 
