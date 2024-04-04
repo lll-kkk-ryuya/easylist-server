@@ -27,4 +27,13 @@ jobs:
         docker build . -t asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/easylistbot/easylistbot:latest
         docker push asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/easylistbot/easylistbot:latest
 
+     - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy easylistbot \
+            --image=asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/easylistbot/easylistbot:latest \
+            --platform=managed \
+            --region=asia-northeast1 \
+            --allow-unauthenticated \
+            --project=${{ secrets.GCP_PROJECT_ID }}
+
       

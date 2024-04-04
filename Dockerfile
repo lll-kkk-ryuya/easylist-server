@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir "uvicorn[standard]>=0.18.3"
 
 
 # コンテナ起動時に実行するコマンドを指定
-CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port 8080"]
+CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port $PORT --log-level debug"]
 
 
 
