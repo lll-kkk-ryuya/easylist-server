@@ -6,4 +6,4 @@ pydantic==2.6.2
 python-dotenv==1.0.0
 SQLAlchemy==2.0.25
 chromadb==0.4.16
-supabase==2.3.6
+supabase-py==2.3.6
