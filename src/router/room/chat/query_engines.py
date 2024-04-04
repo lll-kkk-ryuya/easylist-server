@@ -8,7 +8,7 @@ from llama_index.query_engine.router_query_engine import RouterQueryEngine
 from llama_index.selectors.llm_selectors import LLMMultiSelector
 from llama_index import ServiceContext
 from llama_index.llms import OpenAI
-import os
+
 from dotenv import load_dotenv
 import os
 # .env ファイルを読み込む
