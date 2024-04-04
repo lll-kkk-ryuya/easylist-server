@@ -20,7 +20,6 @@ class VectorStoreAndQueryEngine:
         self.vector_query_engines = {}
 
     def initialize_vector_store_index(self, collection_name, nodes=None, embed_batch_size=64):
-        base_embed_model = resolve_embed_model("local:BAAI/bge-small-en")
         embed_model = OpenAIEmbedding(embed_batch_size=embed_batch_size)
         db = chromadb.PersistentClient(path="chroma_db")
         for node in nodes:

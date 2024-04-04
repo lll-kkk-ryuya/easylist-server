@@ -40,7 +40,7 @@ app_ready = False
 
 @app.on_event("startup")
 async def startup_event():
-    global query_engine 
+    global query_engine, app_ready
     db_url = 'sqlite:///example.db'
     collection_names = ["bunngakubu", "keizai", "hougakubu", "shougakub", "rikougakubu"]
     table_name = "all_curce"
