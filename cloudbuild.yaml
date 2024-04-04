@@ -9,3 +9,15 @@ steps:
 
 images:
   - 'asia-northeast1-docker.pkg.dev/$PROJECT_ID/easylistbot/easylistbot:latest'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+    - 'run'
+    - 'deploy'
+    - 'easylistbot' # あなたのサービス名
+    - '--image'
+    - 'asia-northeast1-docker.pkg.dev/$PROJECT_ID/easylistbot/easylistbot:latest'
+    - '--region'
+    - 'asia-northeast1'
+    - '--platform'
+    - 'managed'
