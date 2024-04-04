@@ -4,6 +4,15 @@ FROM python:3.9.7-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
+# SQLite3の最新版をソースからビルドしてインストールするためのステップ
+RUN apt-get update && apt-get install -y wget build-essential && \
+    wget https://www.sqlite.org/2023/sqlite-autoconf-3390200.tar.gz && \
+    tar xvfz sqlite-autoconf-3390200.tar.gz && \
+    cd sqlite-autoconf-3390200 && \
+    ./configure --prefix=/usr/local && \
+    make && make install && \
+    sqlite3 --version
+
 
 # 慣例に従った作業ディレクトリを設定
 WORKDIR /app
