@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 load_dotenv()
 # 環境変数 'OPENAI_API_KEY' を取得
 openai_api_key = os.getenv('OPENAI_API_KEY')
-import chromadb
 from llama_index.llms import OpenAI
 from llama_index.text_splitter import TokenTextSplitter
 from llama_index.ingestion import IngestionPipeline
@@ -62,4 +61,3 @@ class DocumentProcessor:
 
 
     
-
