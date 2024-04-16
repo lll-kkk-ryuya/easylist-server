@@ -1,6 +1,6 @@
 # Easylist-Bot
 
-慶應義塾大学の学生の履修のためのChatBotです
+慶應義塾大学の学生の履修のためのChatBotです。
 
 ## Features
 
