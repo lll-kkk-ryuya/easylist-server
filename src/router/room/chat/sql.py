@@ -1,5 +1,6 @@
+
 import os
-from llama_index.llms import OpenAI
+from llama_index.llms.openai import OpenAI
 from dotenv import load_dotenv
 # .env ファイルを読み込む
 load_dotenv()
@@ -8,18 +9,12 @@ openai_api_key = os.getenv('OPENAI_API_KEY')
 import openai
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
 from sqlalchemy import insert
-from llama_index.prompts import BasePromptTemplate, PromptTemplate
-from llama_index.prompts.prompt_type import PromptType
+from llama_index.core import BasePromptTemplate, PromptTemplate
+from llama_index.core.prompts import PromptType
 
-from llama_index.indices.struct_store.sql_query import NLSQLTableQueryEngine,NLStructStoreQueryEngine,PGVectorSQLQueryEngine
-from llama_index.indices.struct_store.sql import SQLStructStoreIndex
-from llama_index import (
-    VectorStoreIndex,
-    SimpleDirectoryReader,
-    ServiceContext,
-    StorageContext,
-    SQLDatabase,
-)
+from llama_index.core.indices.struct_store.sql_query import NLSQLTableQueryEngine,NLStructStoreQueryEngine,PGVectorSQLQueryEngine
+from llama_index.core.indices import SQLStructStoreIndex
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ServiceContext, StorageContext, SQLDatabase
 
 from sqlalchemy.exc import NoSuchTableError 
 

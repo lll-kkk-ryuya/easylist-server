@@ -2,7 +2,8 @@ import os
 from supabase import create_client, Client
 from cors_config import add_cors_middleware
 # main_test.py
-from llama_index.core.response.schema import Response, StreamingResponse
+from llama_index.core import Response
+from llama_index.core.base.response.schema import StreamingResponse
 from starlette.responses import Response as StarletteResponse
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import JSONResponse
@@ -15,7 +16,6 @@ from uuid import uuid4, UUID
 import asyncio
 from starlette.websockets import WebSocketDisconnect
 import os
-import uvicorn
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")

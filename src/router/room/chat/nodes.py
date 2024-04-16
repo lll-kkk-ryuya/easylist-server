@@ -1,20 +1,17 @@
 
-from llama_index.llms import OpenAI
-from llama_index.text_splitter import TokenTextSplitter
-from llama_index.ingestion import IngestionPipeline
-from llama_index.extractors import TitleExtractor, QuestionsAnsweredExtractor, EntityExtractor, SummaryExtractor
+from llama_index.llms.openai import OpenAI
+from llama_index.core import VectorStoreIndex
+from llama_index.core.node_parser import TokenTextSplitter
+from llama_index.core.ingestion import IngestionPipeline
+from llama_index.core.extractors import TitleExtractor, QuestionsAnsweredExtractor, SummaryExtractor
+#from llama_index.extractors.entity.base import EntityExtractor
 import os
 from dotenv import load_dotenv
 # .env ファイルを読み込む
 load_dotenv()
 # 環境変数 'OPENAI_API_KEY' を取得
 openai_api_key = os.getenv('OPENAI_API_KEY')
-import chromadb
-from llama_index.llms import OpenAI
-from llama_index.text_splitter import TokenTextSplitter
-from llama_index.ingestion import IngestionPipeline
-from llama_index.extractors import TitleExtractor, QuestionsAnsweredExtractor, EntityExtractor, SummaryExtractor
-from llama_index import Document
+from llama_index.core import Document
 
 class DocumentProcessor:
     def __init__(self, directory=None, model="gpt-3.5-turbo"):
@@ -48,7 +45,7 @@ class DocumentProcessor:
         extractors = [
             TitleExtractor(nodes=5, llm=llm),
             QuestionsAnsweredExtractor(questions=3, llm=llm),
-            EntityExtractor(prediction_threshold=0.5, llm=llm),
+            #EntityExtractor(prediction_threshold=0.5, llm=llm),
             SummaryExtractor(summaries=["prev", "self"]),
         ]
 
@@ -62,4 +59,3 @@ class DocumentProcessor:
 
 
     
-

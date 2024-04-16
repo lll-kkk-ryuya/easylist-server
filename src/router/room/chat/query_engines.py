@@ -2,12 +2,12 @@
 from src.router.room.chat.vector_engines import VectorStoreAndQueryEngine
 from src.router.room.chat.sql import NLSQLQueryEngineManager
 from sqlalchemy import create_engine
-from llama_index.tools import ToolMetadata
-from llama_index.tools.query_engine import QueryEngineTool
-from llama_index.query_engine.router_query_engine import RouterQueryEngine
-from llama_index.selectors.llm_selectors import LLMMultiSelector
-from llama_index import ServiceContext
-from llama_index.llms import OpenAI
+from llama_index.core.tools import ToolMetadata
+from llama_index.core.tools import QueryEngineTool
+from llama_index.core.query_engine import RouterQueryEngine
+from llama_index.core.selectors import LLMMultiSelector
+from llama_index.core import ServiceContext
+from llama_index.llms.openai import OpenAI
 
 from dotenv import load_dotenv
 import os

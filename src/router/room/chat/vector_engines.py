@@ -1,18 +1,15 @@
 import os
 import chromadb
-from llama_index import (
-    VectorStoreIndex, 
-    ServiceContext,
-)
-from llama_index.llms import OpenAI
-from llama_index.storage.storage_context import StorageContext
-from llama_index.response_synthesizers import get_response_synthesizer
-from llama_index.embeddings import resolve_embed_model
-from llama_index.embeddings import OpenAIEmbedding
-from llama_index.query_engine import RetrieverQueryEngine
-from llama_index.retrievers import VectorIndexRetriever
+from llama_index.core import VectorStoreIndex, ServiceContext
+from llama_index.llms.openai import OpenAI
+from llama_index.core import StorageContext
+from llama_index.core import get_response_synthesizer
+from llama_index.core.embeddings import resolve_embed_model
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.core.retrievers import VectorIndexRetriever
 from src.router.room.chat.nodes import DocumentProcessor
-from llama_index.vector_stores import ChromaVectorStore
+from llama_index.vector_stores.chroma import ChromaVectorStore
 from dotenv import load_dotenv
 load_dotenv()
 # 環境変数 'OPENAI_API_KEY' を取得

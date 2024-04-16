@@ -1,7 +1,8 @@
 import os
 from supabase import create_client, Client
 from cors_config import add_cors_middleware
-from llama_index.core.response.schema import Response, StreamingResponse
+from llama_index.core import Response
+from llama_index.core.response.schema import StreamingResponse
 # main_test.py
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import JSONResponse
