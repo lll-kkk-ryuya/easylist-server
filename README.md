@@ -11,3 +11,6 @@
 ## Tech Stack
 
 **Client:** Python, llama-index==0.10.29, OpenAI,
+**VectorDataBase** ChromaDB
+
+## Aut
