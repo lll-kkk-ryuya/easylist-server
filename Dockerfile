@@ -1,3 +1,5 @@
+FROM python:3.9.7-slim
+
 # 必要なパッケージをインストール
 RUN apt-get update && \
     apt-get install -y wget build-essential && \
@@ -21,9 +23,6 @@ WORKDIR /app
 
 # 現在のディレクトリ内のすべてのファイルとディレクトリをコピー
 COPY . .
-
-# pipをアップグレード
-RUN pip install --upgrade pip
 
 # 依存関係をインストール
 RUN pip install --no-cache-dir -r requirements.txt
