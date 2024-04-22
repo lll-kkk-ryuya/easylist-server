@@ -11,6 +11,7 @@ from llama_index.core.retrievers import VectorIndexRetriever
 from src.router.room.chat.nodes import DocumentProcessor
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from dotenv import load_dotenv
+from llama_index.core.postprocessor import SentenceTransformerRerank
 load_dotenv()
 # 環境変数 'OPENAI_API_KEY' を取得
 openai_api_key = os.getenv('OPENAI_API_KEY')
@@ -36,7 +37,7 @@ class VectorStoreAndQueryEngine:
             return collection_name, index
         except ValueError as e:
             print("エンべディング開始")
-            chroma_collection = db.get_or_create_collection(collection_name)# Initialize vector store and storage context
+            chroma_collection = db.get_or_create_collection(collection_name)
             vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
             storage_context = StorageContext.from_defaults(vector_store=vector_store)
             service_context = ServiceContext.from_defaults(embed_model=embed_model)
@@ -47,17 +48,20 @@ class VectorStoreAndQueryEngine:
         llm = OpenAI(model=model, temperature=temperature,api_key=openai_api_key )
         service_context = ServiceContext.from_defaults(llm=llm)
         vector_retriever = VectorIndexRetriever(index=index, similarity_top_k=similarity_top_k)
-
+        #rerank = SentenceTransformerRerank(model="cross-encoder/ms-marco-MiniLM-L-2-v2", top_n=3)
         response_synthesizer = get_response_synthesizer(service_context=service_context, streaming=True)
-        vector_query_engine = RetrieverQueryEngine(retriever=vector_retriever, response_synthesizer=response_synthesizer)
+        vector_query_engine = RetrieverQueryEngine(
+            retriever=vector_retriever, 
+            response_synthesizer=response_synthesizer, 
+            #node_postprocessors=[rerank]
+            )
         return vector_query_engine
 
-    def add_vector_query_engine(self, collection_name, model="gpt-4", temperature=0.4, similarity_top_k=5):
-        document_processor = DocumentProcessor(directory=self.document_directory, model=model)
+    def add_vector_query_engine(self, collection_name, model="gpt-4", temperature=0.4, similarity_top_k=5):      
+        document_processor = DocumentProcessor(directory=self.document_directory, model=model)  
         nodes = document_processor.process_documents()
         _,index = self.initialize_vector_store_index(collection_name,nodes)
         vector_query_engine = self.initialize_vector_query_engine(index, model, temperature, similarity_top_k)
-        #return vector_query_engine
         self.vector_query_engines[collection_name] = vector_query_engine
 
 

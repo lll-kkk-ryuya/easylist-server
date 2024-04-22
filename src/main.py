@@ -1,9 +1,7 @@
 import os
 from supabase import create_client, Client
 from cors_config import add_cors_middleware
-# main_test.py
-from llama_index.core import Response
-from llama_index.core.base.response.schema import StreamingResponse
+from llama_index.core.base.response.schema import StreamingResponse,AsyncStreamingResponse,Response
 from starlette.responses import Response as StarletteResponse
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import JSONResponse
@@ -16,6 +14,7 @@ from uuid import uuid4, UUID
 import asyncio
 from starlette.websockets import WebSocketDisconnect
 import os
+from time import time
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -84,36 +83,23 @@ def health_check():
     else:
         return StarletteResponse(content={"status": "starting"}, status_code=503)
 
-#リアルタイム通信
-#StreamingResponseのprint_response_streamという関数は文字を一つ一つ出現させることが可能
-# WebSocketエンドポイントを定義
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    global query_engine  # グローバル変数を参照
+    global query_engine  
     await websocket.accept()
     try:
         while True:
-            # クライアントからメッセージを受信
+           
             
             data = await websocket.receive_text()
-            print(data)
-            # query_engineを非同期的に取得（もしquery_engineの取得が非同期である場合）
-            # query_engine = await query_service.get_query_engine()
             data = json.loads(data)
             query_str = data.get('content')
-            print(query_str)
-            print(type(query_str))
-            # query_engine.queryが非同期関数である場合、awaitを使用して呼び出し
             result = query_engine.query(query_str)
-            # resultの型に応じて処理を分岐
-            print(type(result))
             if isinstance(result, Response):
                 reply_from_bot = result.response
             elif isinstance(result, StreamingResponse):
                 reply_from_bot =result.get_response().response
-            else:
-                reply_from_bot = "エラー: 未知のレスポンスタイプ"
-            # 結果をクライアントに送信
             reply_json_str = json.dumps({ "reply_from_bot": reply_from_bot}, ensure_ascii=False)
             await websocket.send_text(reply_json_str)
             print("送信されたメッセージ:", reply_json_str)
@@ -123,22 +109,42 @@ async def websocket_endpoint(websocket: WebSocket):
         # WebSocketの接続がクライアントによって閉じられた場合
         print("WebSocket connection was closed")
 
-
+async def get_response_text(response_gen):
+    response_txt = ""
+    async for text in response_gen:
+        response_txt += text
+    return response_txt
+    
 @app.websocket("/ws_test")
 async def websocket_endpoint(websocket: WebSocket):
-    print("起動")
+    global query_engine  
     await websocket.accept()
-
     try:
         while True:
+           
+            
             data = await websocket.receive_text()
-            print(data)
-            reply_from_bot="レスです"
-            reply_from_bot_encoded = reply_from_bot.encode('utf-8')
-            reply_from_bot_utf8 = reply_from_bot_encoded.decode('utf-8')
-            reply_json_str = json.dumps({ "reply_from_bot": reply_from_bot_utf8 }, ensure_ascii=False)
-            await websocket.send_text(reply_json_str)
-            print("送信されたメッセージ:", reply_json_str)
+            data = json.loads(data)
+            query_str = data.get('content')
+            now = time()
+            result = await query_engine.aquery(query_str)
+
+            # 確認用にクラスタイプを確認します
+            if isinstance(result, AsyncStreamingResponse):
+                #async for text in result.async_response_gen:
+                    #reply_json_str = json.dumps({"reply_from_bot": text}, ensure_ascii=False)
+                    #await websocket.send_text(reply_json_str)
+                response_text = await result._async_str()  # 非同期 str 取得
+                reply_json_str = json.dumps({"reply_from_bot": response_text}, ensure_ascii=False)
+                await websocket.send_text(reply_json_str)
+                end_time = time()  # 終了時刻を記録
+                elapsed_time = end_time - now  # 実行時間を計算
+                print(f"Query execution took {elapsed_time} seconds.") 
+            else:
+                reply_from_bot = result.response
+                reply_json_str = json.dumps({"reply_from_bot": reply_from_bot}, ensure_ascii=False)
+                await websocket.send_text(reply_json_str)
+
 
     except WebSocketDisconnect:
         # WebSocketの接続がクライアントによって閉じられた場合
