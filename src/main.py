@@ -84,7 +84,6 @@ def health_check():
         return StarletteResponse(content={"status": "starting"}, status_code=503)
 
 
-@app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     global query_engine  
     await websocket.accept()
@@ -95,25 +94,30 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             data = json.loads(data)
             query_str = data.get('content')
-            result = query_engine.query(query_str)
-            if isinstance(result, Response):
+            now = time()
+            result = await query_engine.aquery(query_str)
+
+            # 確認用にクラスタイプを確認します
+            if isinstance(result, AsyncStreamingResponse):
+                #async for text in result.async_response_gen:
+                    #reply_json_str = json.dumps({"reply_from_bot": text}, ensure_ascii=False)
+                    #await websocket.send_text(reply_json_str)
+                response_text = await result._async_str()  # 非同期 str 取得
+                reply_json_str = json.dumps({"reply_from_bot": response_text}, ensure_ascii=False)
+                await websocket.send_text(reply_json_str)
+                end_time = time()  # 終了時刻を記録
+                elapsed_time = end_time - now  # 実行時間を計算
+                print(f"Query execution took {elapsed_time} seconds.") 
+            else:
                 reply_from_bot = result.response
-            elif isinstance(result, StreamingResponse):
-                reply_from_bot =result.get_response().response
-            reply_json_str = json.dumps({ "reply_from_bot": reply_from_bot}, ensure_ascii=False)
-            await websocket.send_text(reply_json_str)
-            print("送信されたメッセージ:", reply_json_str)
+                reply_json_str = json.dumps({"reply_from_bot": reply_from_bot}, ensure_ascii=False)
+                await websocket.send_text(reply_json_str)
 
 
     except WebSocketDisconnect:
         # WebSocketの接続がクライアントによって閉じられた場合
         print("WebSocket connection was closed")
 
-async def get_response_text(response_gen):
-    response_txt = ""
-    async for text in response_gen:
-        response_txt += text
-    return response_txt
     
 @app.websocket("/ws_test")
 async def websocket_endpoint(websocket: WebSocket):
