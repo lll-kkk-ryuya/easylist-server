@@ -5,6 +5,6 @@ openai>=1.14.0
 pydantic==1.10.9
 python-dotenv==1.0.0
 SQLAlchemy==2.0.25
-chromadb==0.4.16
+chromadb>=0.4.22,<0.5.0
 supabase==2.3.6
 llama-index-vector-stores-chroma==0.1.6
