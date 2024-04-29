@@ -87,35 +87,36 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
            
-            
+            now = time()
             data = await websocket.receive_text()
             data = json.loads(data)
             message_id = data['id']
             query_str = data.get('content')
-            now = time()
+            #result = query_engine.query(query_str)
             result = await query_engine.aquery(query_str)
-
-            # 確認用にクラスタイプを確認します
+            
             if isinstance(result, AsyncStreamingResponse):
-                #async for text in result.async_response_gen:
-                    #reply_json_str = json.dumps({"reply_from_bot": text}, ensure_ascii=False)
-                    #await websocket.send_text(reply_json_str)
-                response_text = await result._async_str()  # 非同期 str 取得
-                reply_json_str = json.dumps({"id": message_id, "reply_from_bot": response_text}, ensure_ascii=False)
-                await websocket.send_text(reply_json_str)
-                end_time = time()  # 終了時刻を記録
-                elapsed_time = end_time - now  # 実行時間を計算
-                print(f"Query execution took {elapsed_time} seconds.") 
-            elif isinstance(result, Response):
-                response_text = result.response
                 
-                reply_json_str = json.dumps({"id": message_id, "reply_from_bot": response_text}, ensure_ascii=False)
+                async for text in result.async_response_gen:
+                    reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
+                    print(reply_json_str)
+                    await websocket.send_text(reply_json_str)
+                end_time = time()  
+                elapsed_time = end_time - now  
+                print(f"Query execution took {elapsed_time} seconds.")  
+            elif isinstance(result, Response):
+                
+                reply_from_bot = result.response
+                print(reply_from_bot)
+                reply_json_str = json.dumps({"id": message_id, "reply_from_bot": reply_from_bot}, ensure_ascii=False)
                 await websocket.send_text(reply_json_str)
-
-
-    except WebSocketDisconnect:
-        # WebSocketの接続がクライアントによって閉じられた場合
-        print("WebSocket connection was closed")
+                end_time = time() 
+                elapsed_time = end_time - now  
+                print(f"Query execution took {elapsed_time} seconds.")
+    except Exception as e:
+        print(f"Error during websocket communication: {e}")
+    finally:
+        await websocket.close()
 
 
 @app.websocket("/ws_test")
@@ -139,17 +140,17 @@ async def websocket_endpoint(websocket: WebSocket):
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
                     print(reply_json_str)
                     await websocket.send_text(reply_json_str)
-                end_time = time()  # 終了時刻を記録
-                elapsed_time = end_time - now  # 実行時間を計算
-                print(f"Query execution took {elapsed_time} seconds.")  # 実行時間をログに出力
+                end_time = time()  
+                elapsed_time = end_time - now  
+                print(f"Query execution took {elapsed_time} seconds.")  
             elif isinstance(result, Response):
-                # 通常のレスポンスの場合
+                
                 reply_from_bot = result.response
                 print(reply_from_bot)
                 reply_json_str = json.dumps({"id": message_id, "reply_from_bot": reply_from_bot}, ensure_ascii=False)
                 await websocket.send_text(reply_json_str)
                 end_time = time() 
-                elapsed_time = end_time - now  # 実行時間を計算
+                elapsed_time = end_time - now  
                 print(f"Query execution took {elapsed_time} seconds.")
     except Exception as e:
         print(f"Error during websocket communication: {e}")
