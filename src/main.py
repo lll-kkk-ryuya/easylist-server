@@ -15,7 +15,8 @@ import asyncio
 from starlette.websockets import WebSocketDisconnect ,WebSocketState
 import os
 from time import time
-
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
@@ -79,42 +80,44 @@ def health_check():
         return {"status": "ok"}
     else:
         return StarletteResponse(content={"status": "starting"}, status_code=503)
-
+    
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    global query_engine  
+    global query_engine
     await websocket.accept()
+    logging.debug("WebSocket connection accepted.")
+
     try:
         while True:
-           
             now = time()
             data = await websocket.receive_text()
+            logging.debug(f"Received data: {data}")
+
             data = json.loads(data)
             message_id = data['id']
             query_str = data.get('content')
-            #result = query_engine.query(query_str)
+            logging.debug(f"Processing query: {query_str}")
+
+            # result = query_engine.query(query_str)
             result = await query_engine.aquery(query_str)
-            
+            logging.debug(f"Query result type: {type(result)}")
+
             if isinstance(result, AsyncStreamingResponse):
-                
                 async for text in result.async_response_gen:
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
-                    print(reply_json_str)
+                    logging.debug(f"Sending streaming response: {reply_json_str}")
                     await websocket.send_text(reply_json_str)
-        
             elif isinstance(result, Response):
-                
                 reply_from_bot = result.response
-                print(reply_from_bot)
                 reply_json_str = json.dumps({"id": message_id, "reply_from_bot": reply_from_bot}, ensure_ascii=False)
+                logging.debug(f"Sending response: {reply_json_str}")
                 await websocket.send_text(reply_json_str)
-            
-                
     except Exception as e:
-        print(f"Error during websocket communication: {e}")
-   
-
-
+        logging.error(f"Error during websocket communication: {e}")
+        # エラー発生時にWebSocketがまだ開いていればクローズする
+        if not websocket.closed:
+            await websocket.close()
+            logging.debug("WebSocket connection closed due to an error.")
 
 @app.websocket("/ws_test")
 async def websocket_endpoint(websocket: WebSocket):
