@@ -104,7 +104,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if isinstance(result, AsyncStreamingResponse):
                 logging.debug(f"Type of async_response_gen: {type(result.async_response_gen)}")
-                async for text in result.async_response_gen:
+                async for text in result.async_response_gen():
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
                     logging.debug(f"Sending streaming response: {reply_json_str}")
                     await websocket.send_text(reply_json_str)
@@ -116,7 +116,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         logging.error(f"Error during websocket communication: {e}")
         # エラー発生時にWebSocketがまだ開いていればクローズする
-        if not websocket.closed:
+        if websocket.client_state == WebSocketState.DISCONNECTED:
             await websocket.close()
             logging.debug("WebSocket connection closed due to an error.")
 
