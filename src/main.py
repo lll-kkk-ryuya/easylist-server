@@ -82,33 +82,37 @@ def health_check():
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    global query_engine  
     await websocket.accept()
     try:
         while True:
-            try:
-                data = await websocket.receive_text()
-            except WebSocketDisconnect:
-                break  # クライアントが接続を切断したためループを抜ける
-
+           
+            now = time()
+            data = await websocket.receive_text()
             data = json.loads(data)
             message_id = data['id']
             query_str = data.get('content')
+            #result = query_engine.query(query_str)
             result = await query_engine.aquery(query_str)
-
+            
             if isinstance(result, AsyncStreamingResponse):
+                
                 async for text in result.async_response_gen:
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
+                    print(reply_json_str)
                     await websocket.send_text(reply_json_str)
+        
             elif isinstance(result, Response):
+                
                 reply_from_bot = result.response
+                print(reply_from_bot)
                 reply_json_str = json.dumps({"id": message_id, "reply_from_bot": reply_from_bot}, ensure_ascii=False)
                 await websocket.send_text(reply_json_str)
-
+            
+                
     except Exception as e:
         print(f"Error during websocket communication: {e}")
-    finally:
-        if websocket.application_state != WebSocketState.DISCONNECTED:
-            await websocket.close()
+   
 
 
 
@@ -148,5 +152,4 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"Error during websocket communication: {e}")
     finally:
-        if websocket.application_state != WebSocketState.DISCONNECTED:
-            await websocket.close()
+        await websocket.close()
