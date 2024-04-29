@@ -103,6 +103,7 @@ async def websocket_endpoint(websocket: WebSocket):
             logging.debug(f"Query result type: {type(result)}")
 
             if isinstance(result, AsyncStreamingResponse):
+                logging.debug(f"Type of async_response_gen: {type(result.async_response_gen)}")
                 async for text in result.async_response_gen:
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
                     logging.debug(f"Sending streaming response: {reply_json_str}")
