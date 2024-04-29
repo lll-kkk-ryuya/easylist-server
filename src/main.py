@@ -101,22 +101,21 @@ async def websocket_endpoint(websocket: WebSocket):
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
                     print(reply_json_str)
                     await websocket.send_text(reply_json_str)
-                end_time = time()  
-                elapsed_time = end_time - now  
-                print(f"Query execution took {elapsed_time} seconds.")  
+        
             elif isinstance(result, Response):
                 
                 reply_from_bot = result.response
                 print(reply_from_bot)
                 reply_json_str = json.dumps({"id": message_id, "reply_from_bot": reply_from_bot}, ensure_ascii=False)
                 await websocket.send_text(reply_json_str)
-                end_time = time() 
-                elapsed_time = end_time - now  
-                print(f"Query execution took {elapsed_time} seconds.")
+            
+                
     except Exception as e:
         print(f"Error during websocket communication: {e}")
     finally:
-        await websocket.close()
+        if websocket.application_state != "disconnected":
+            await websocket.close()
+
 
 
 @app.websocket("/ws_test")
@@ -155,4 +154,5 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"Error during websocket communication: {e}")
     finally:
-        await websocket.close()
+        if websocket.application_state != "disconnected":
+            await websocket.close()
