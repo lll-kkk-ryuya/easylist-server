@@ -113,7 +113,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"Error during websocket communication: {e}")
     finally:
-        if websocket.application_state != "disconnected":
+        if websocket.application_state != WebSocketState.DISCONNECTED:
             await websocket.close()
 
 
@@ -154,5 +154,5 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"Error during websocket communication: {e}")
     finally:
-        if websocket.application_state != "disconnected":
+        if websocket.application_state != WebSocketState.DISCONNECTED:
             await websocket.close()
