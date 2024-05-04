@@ -100,60 +100,64 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # result = query_engine.query(query_str)
             result = await query_engine.aquery(query_str)
-            logging.debug(f"Query result type: {type(result)}")
+           
 
             if isinstance(result, AsyncStreamingResponse):
-                logging.debug(f"Type of async_response_gen: {type(result.async_response_gen)}")
                 async for text in result.async_response_gen():
+                    reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
+                    await websocket.send_text(reply_json_str)
+                end_of_stream_message = json.dumps({"id": message_id, "reply_from_bot": "STREAM_END", "status": "completed"})
+                await websocket.send_text(end_of_stream_message)
+                logging.debug("All parts of the streaming response have been sent.")
+            elif isinstance(result, Response):
+                reply_from_bot = result.response
+                reply_json_str = json.dumps({"id": message_id, "reply_from_bot": reply_from_bot}, ensure_ascii=False)
+               
+                await websocket.send_text(reply_json_str)
+    except Exception as e:
+       
+        if websocket.client_state == WebSocketState.DISCONNECTED:
+            await websocket.close()
+            
+@app.websocket("/ws_test")
+async def websocket_endpoint(websocket: WebSocket):
+    global query_engine
+    await websocket.accept()
+    logging.debug("WebSocket connection accepted.")
+
+    try:
+        while True:
+            now = time()
+            data = await websocket.receive_text()
+
+            data = json.loads(data)
+            message_id = data['id']
+            query_str = data.get('content')
+            logging.debug(f"Processing query: {query_str}")
+
+            # result = query_engine.query(query_str)
+            result = await query_engine.aquery(query_str)
+            
+
+            if isinstance(result, AsyncStreamingResponse):
+    
+                async for text in result.async_response_gen:#デプロイする際はなぜか()が必要
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
                     logging.debug(f"Sending streaming response: {reply_json_str}")
                     await websocket.send_text(reply_json_str)
+                end_of_stream_message = json.dumps({"id": message_id, "reply_from_bot": "STREAM_END", "status": "completed"})
+                await websocket.send_text(end_of_stream_message)
+                logging.debug("All parts of the streaming response have been sent.")
+
             elif isinstance(result, Response):
                 reply_from_bot = result.response
                 reply_json_str = json.dumps({"id": message_id, "reply_from_bot": reply_from_bot}, ensure_ascii=False)
                 logging.debug(f"Sending response: {reply_json_str}")
                 await websocket.send_text(reply_json_str)
+                end_of_stream_message = json.dumps({"id": message_id, "reply_from_bot": "STREAM_END", "status": "completed"})
+                await websocket.send_text(end_of_stream_message)
+                logging.debug("All parts of the streaming response have been sent.")
     except Exception as e:
-        logging.error(f"Error during websocket communication: {e}")
-        # エラー発生時にWebSocketがまだ開いていればクローズする
         if websocket.client_state == WebSocketState.DISCONNECTED:
             await websocket.close()
             logging.debug("WebSocket connection closed due to an error.")
-
-@app.websocket("/ws_test")
-async def websocket_endpoint(websocket: WebSocket):
-    global query_engine  
-    await websocket.accept()
-    try:
-        while True:
-           
-            now = time()
-            data = await websocket.receive_text()
-            data = json.loads(data)
-            message_id = data['id']
-            query_str = data.get('content')
-            #result = query_engine.query(query_str)
-            result = await query_engine.aquery(query_str)
-            
-            if isinstance(result, AsyncStreamingResponse):
-                
-                async for text in result.async_response_gen:
-                    reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
-                    print(reply_json_str)
-                    await websocket.send_text(reply_json_str)
-                end_time = time()  
-                elapsed_time = end_time - now  
-                print(f"Query execution took {elapsed_time} seconds.")  
-            elif isinstance(result, Response):
-                
-                reply_from_bot = result.response
-                print(reply_from_bot)
-                reply_json_str = json.dumps({"id": message_id, "reply_from_bot": reply_from_bot}, ensure_ascii=False)
-                await websocket.send_text(reply_json_str)
-                end_time = time() 
-                elapsed_time = end_time - now  
-                print(f"Query execution took {elapsed_time} seconds.")
-    except Exception as e:
-        print(f"Error during websocket communication: {e}")
-    finally:
-        await websocket.close()

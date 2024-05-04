@@ -5,8 +5,10 @@ from dotenv import load_dotenv
 # .env ファイルを読み込む
 load_dotenv()
 # 環境変数 'OPENAI_API_KEY' を取得
-openai_api_key = os.getenv('OPENAI_API_KEY')
 import openai
+
+openai.api_key =os.getenv('OPENAI_API_KEY')
+openai_api_key = os.getenv('OPENAI_API_KEY')
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
 from sqlalchemy import insert
 from llama_index.core import BasePromptTemplate, PromptTemplate
@@ -21,8 +23,7 @@ from sqlalchemy.exc import NoSuchTableError
 # データベースエンジンとメタデータオブジェクトの定義
 #engine = create_engine('sqlite:///example.db', echo=True)
 #metadata_obj = MetaData(engine)
-llm = OpenAI(temperature=0, model="gpt-4",api_key=openai_api_key )
-service_context = ServiceContext.from_defaults(llm=llm)
+
 
 
 class DatabaseManager:
