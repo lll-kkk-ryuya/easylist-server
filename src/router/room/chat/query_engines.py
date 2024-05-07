@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from llama_index.core.tools import ToolMetadata
 from llama_index.core.tools import QueryEngineTool
 from llama_index.core.query_engine import RouterQueryEngine
-from llama_index.core.selectors import LLMMultiSelector
+from llama_index.core.selectors import LLMSingleSelector, LLMMultiSelector
 from llama_index.core import ServiceContext
 from llama_index.llms.openai import OpenAI
 
@@ -46,7 +46,7 @@ class QueryEngineManager:
 
     def query_engine(self):
         router_query_engine = RouterQueryEngine(
-            selector=LLMMultiSelector.from_defaults(service_context=self.service_context),
+            selector=LLMSingleSelector.from_defaults(service_context=self.service_context),
             query_engine_tools=self.query_engine_tools, verbose=True, service_context=self.service_context
         )
         return router_query_engine

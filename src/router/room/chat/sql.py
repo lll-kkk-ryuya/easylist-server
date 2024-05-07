@@ -15,8 +15,10 @@ from llama_index.core import BasePromptTemplate, PromptTemplate
 from llama_index.core.prompts import PromptType
 
 from llama_index.core.indices.struct_store.sql_query import NLSQLTableQueryEngine,NLStructStoreQueryEngine,PGVectorSQLQueryEngine
-from llama_index.core.indices import SQLStructStoreIndex
+from llama_index.core.indices.struct_store.sql_retriever import NLSQLRetriever
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ServiceContext, StorageContext, SQLDatabase
+from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.core import get_response_synthesizer
 
 from sqlalchemy.exc import NoSuchTableError 
 
@@ -76,7 +78,7 @@ class NLSQLQueryEngineManager:
 
     def create_nlsql_query_engine(self, table_name):
         engine = create_engine('sqlite:///example.db', echo=True)
-        llm = OpenAI(temperature=0, model="gpt-4",api_key=openai_api_key)
+        llm = OpenAI(temperature=0.1, model="gpt-4",api_key=openai_api_key)
         service_context = ServiceContext.from_defaults(llm=llm)
         # Initialize SQLDatabase and NLSQLTableQueryEngine
         sql_database = SQLDatabase(engine, include_tables=[table_name])
@@ -131,14 +133,22 @@ class NLSQLQueryEngineManager:
             template = template,
             prompt_type = PromptType.TEXT_TO_SQL,)
         #function_mappings={"roman_str": format_query_with_roman_numerals}
+        #text_to_sql_prompt =text_to_sql_prompt.format(table_name=table_name)
         
-    #text_to_sql_prompt =text_to_sql_prompt.format(table_name=table_name)
-        table_query_engine = NLSQLTableQueryEngine(
+        nlsql_retriver=NLSQLRetriever(
             sql_database=sql_database,
             text_to_sql_prompt=text_to_sql_prompt,
             tables=[table_name],
             service_context=service_context,
         )
+        response_synthesizer = get_response_synthesizer(service_context=service_context, streaming=True)
+        table_query_engine = RetrieverQueryEngine(
+            retriever=nlsql_retriver, 
+            response_synthesizer=response_synthesizer, 
+            #node_postprocessors=[rerank]
+            )
+
+        #table_query_engine = NLSQLTableQueryEngine(sql_database=sql_database,text_to_sql_prompt=text_to_sql_prompt,tables=[table_name],service_context=service_context,)
 
         # 作成したクエリーエンジンを返す
         return table_query_engine

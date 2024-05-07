@@ -16,6 +16,7 @@ from starlette.websockets import WebSocketDisconnect ,WebSocketState
 import os
 from time import time
 import logging
+import traceback
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -65,7 +66,7 @@ async def startup_event():
         "name": "Commerce Department",
         "description": "Provides comprehensive data excluding course information for the Commerce Department, such as enrollment requirements, graduation criteria, and advancement conditions."
     },
-    #"all_curce": {"name": "Course Data","description": "Course data: ID, campus, name, field, term, schedule, mode, year, faculties, URL. Covers all departments and provides detailed information on each course offered."}
+    "all_curce": {"name": "Course Data","description": "Course data: ID, campus, name, field, term, schedule, mode, year, faculties, URL. Covers all departments and provides detailed information on each course offered."}
 }
     
     query_service = QueryService(db_url,collection_names,table_name,tool_metadata)
@@ -137,7 +138,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # result = query_engine.query(query_str)
             result = await query_engine.aquery(query_str)
-            
+            print(type(result))
 
             if isinstance(result, AsyncStreamingResponse):
     
@@ -158,6 +159,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_text(end_of_stream_message)
                 logging.debug("All parts of the streaming response have been sent.")
     except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        logging.error(traceback.format_exc())  # スタックトレースを出力
         if websocket.client_state == WebSocketState.DISCONNECTED:
             await websocket.close()
             logging.debug("WebSocket connection closed due to an error.")
