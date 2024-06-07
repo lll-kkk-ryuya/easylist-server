@@ -13,12 +13,12 @@ class QueryService:
         # セットアップ処理を非同期で実行する
         self.qem.setup_vector_query_engines(self.collection_names)
         self.qem.add_nlsql_query_engine(self.table_name)
-        self.qem.setup_query_engine_tools(self.tool_metadata)
+        self.qem.setup_query_engine_tools()
 
     async def query_engine(self):
         # クエリの実行と結果の取得を非同期で行う
         # この部分はQueryEngineManagerが非同期操作をサポートしている場合の例です
-        result = self.qem.query_engine()
+        result = await self.qem.query_engine()
         return result
 
 

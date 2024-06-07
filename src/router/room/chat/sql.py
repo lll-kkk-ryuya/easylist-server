@@ -141,10 +141,11 @@ class NLSQLQueryEngineManager:
             tables=[table_name],
             service_context=service_context,
         )
-        response_synthesizer = get_response_synthesizer(service_context=service_context, streaming=True)
-        table_query_engine = RetrieverQueryEngine(
+        response_synthesizer = get_response_synthesizer(llm=llm, streaming=True,use_async=True)
+        table_query_engine = RetrieverQueryEngine.from_args(
             retriever=nlsql_retriver, 
             response_synthesizer=response_synthesizer, 
+            use_async=True
             #node_postprocessors=[rerank]
             )
 
