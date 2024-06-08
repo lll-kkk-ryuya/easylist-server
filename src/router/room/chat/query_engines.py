@@ -6,9 +6,23 @@ from llama_index.core.tools import ToolMetadata
 from llama_index.core.tools import QueryEngineTool
 from llama_index.core.query_engine import RouterQueryEngine
 from llama_index.core.selectors import LLMSingleSelector, LLMMultiSelector
+from llama_index.core.selectors import (
+    PydanticMultiSelector,
+    PydanticSingleSelector,
+)
+from llama_index.core.response_synthesizers import TreeSummarize
+from llama_index.core.schema import QueryBundle
+from llama_index.core.prompts.prompt_type import PromptType
 from llama_index.core import ServiceContext
 from llama_index.llms.openai import OpenAI
-
+from llama_index.core.selectors.prompts import (
+    DEFAULT_MULTI_SELECT_PROMPT_TMPL,
+    DEFAULT_SINGLE_SELECT_PROMPT_TMPL,
+    MultiSelectPrompt,
+    SingleSelectPrompt,
+)
+from llama_index.core.output_parsers.selection import SelectionOutputParser
+from llama_index.core.prompts.base import PromptTemplate
 from dotenv import load_dotenv
 import os
 # .env ファイルを読み込む
@@ -24,6 +38,7 @@ class QueryEngineManager:
         self.nlsql_manager = NLSQLQueryEngineManager(engine=self.engine)
         self.query_engines_dict = {}
         self.query_engine_tools = []
+        self.choices = []
         self.llm = OpenAI(temperature=0.2, model="gpt-4",api_key=openai_api_key)
         self.service_context = ServiceContext.from_defaults(llm=self.llm)
 
@@ -35,18 +50,126 @@ class QueryEngineManager:
     def add_nlsql_query_engine(self, table_name):
         self.query_engines_dict[table_name] = self.nlsql_manager.create_nlsql_query_engine(table_name)
 
-    def setup_query_engine_tools(self, tool_metadata):
-        for collection_name, metadata in tool_metadata.items():
-            self.query_engine_tools.append(
-                QueryEngineTool(
-                    query_engine=self.query_engines_dict[collection_name],
-                    metadata=ToolMetadata(name=metadata["name"], description=metadata["description"])
-                )
+    def setup_query_engine_tools(self):
+        self.query_engine_tools = [
+    QueryEngineTool(
+        query_engine=self.query_engines_dict['keirikou.pdf'],
+        metadata=ToolMetadata(
+            name="Engineering Department",
+            description=(
+                "Provides data for students in  the Engineering Department, "
+            ),
+        ),
+    ),
+    QueryEngineTool(
+        query_engine=self.query_engines_dict['keihou.pdf'],
+        metadata=ToolMetadata(
+            name="Law Department",
+            description=(
+                "Provides data for students in the Law Department, "
+            ),
+        ),
+    ),
+
+    QueryEngineTool(
+        query_engine=self.query_engines_dict['keikei.pdf'],
+        metadata=ToolMetadata(
+            name="Economics Department",
+            description=(
+                "Provides data for students in the the Economics Department, "
+            ),
+        ),
+    ),
+    QueryEngineTool(
+        query_engine=self.query_engines_dict["keibunn.pdf"],
+        metadata=ToolMetadata(
+            name="Literature Department",
+            description=(
+                "Provides data for students in the Literature Department, "
+            ),
+        ),
+    ),
+    QueryEngineTool(
+        query_engine=self.query_engines_dict['keishou.pdf'],
+        metadata=ToolMetadata(
+            name="Commerce Department",
+            description=(
+                "Provides data for students in the Commerce Department, "
+            ),
+        ),
+    ),
+    QueryEngineTool(
+        query_engine=self.query_engines_dict["keishou.pdf"],
+        metadata=ToolMetadata(
+            name="If no specific department is specified (general case)",
+            description=(
+                "If none of the choices provided in the list seem to directly address this question, please refer to this.If no specific department is specified (general case)\n"
+            ),
+        ),
+    ),
+    QueryEngineTool(query_engine=self.query_engines_dict['all_curce'],
+                    metadata=ToolMetadata(
+                        name="全ての授業データ",
+                        description=(
+                            "授業データ: コースID, キャンパス, 授業名, 学期,  時間割, 教授名, 形式(対面授業かオンライン授業か), 年度, 取得可能な学部, シラバスの詳細, URL。授業に関する時間割などの詳細は、こちらを参照してください。"
+                            ),),),
+]
+      
+
+    async def query_engine(self):
+       
+        llm = OpenAI(temperature=0.3, model="gpt-4-turbo",api_key=openai_api_key)
+        summarizer = TreeSummarize(llm=llm, streaming=True, use_async=True)
+        router_query_engine = RouterQueryEngine.from_defaults(
+            selector=LLMMultiSelector.from_defaults(llm = llm,max_outputs=4),
+            query_engine_tools=self.query_engine_tools,
+            summarizer=summarizer,
+            verbose=True, 
+            #service_context=self.service_context
+            )
+        
+        return router_query_engine
+    '''
+    async def query_engine(self, query_bundle: QueryBundle):
+        # 適切なプロンプトテンプレート文字列を設定
+        prompt_template_str = """
+"""
+
+        # 適切なOutputParserを設定
+        output_parser = SelectionOutputParser()
+
+        # プロンプトのインスタンスを作成
+        prompt = PromptTemplate(
+            template=prompt_template_str,
+            output_parser=output_parser,
+            prompt_type=PromptType.MULTI_SELECT,
+        )
+
+        # LLMのインスタンスを作成
+    
+        llm = OpenAI(temperature=0.3, model="gpt-3.5-turbo", api_key=openai_api_key)
+        max_outputs = 10
+
+        # LLMMultiSelectorのインスタンスを作成
+        selector = LLMMultiSelector(
+            llm=llm,
+            prompt=prompt,
+            #max_outputs=max_outputs
+        )
+
+        # 非同期メソッドをawaitで呼び出し
+        choices = [x.metadata for x in self.query_engine_tools]
+        selected_results = await selector._aselect(
+            choices=choices, 
+            query=query_bundle
             )
 
-    def query_engine(self):
-        router_query_engine = RouterQueryEngine(
-            selector=LLMSingleSelector.from_defaults(service_context=self.service_context),
-            query_engine_tools=self.query_engine_tools, verbose=True, service_context=self.service_context
+        # RouterQueryEngineのインスタンスを作成
+        router_query_engine = RouterQueryEngine.from_defaults(
+            selector=selected_results,
+            query_engine_tools=self.query_engine_tools,
+            verbose=True,
+            # service_context=self.service_context
         )
-        return router_query_engine
+
+        return router_query_engine'''
