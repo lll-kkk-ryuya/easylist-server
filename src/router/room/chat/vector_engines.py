@@ -18,7 +18,7 @@ load_dotenv()
 openai_api_key = os.getenv('OPENAI_API_KEY')
 
 class VectorStoreAndQueryEngine:
-    def __init__(self, path="chroma_db_new_pdf",document_directory=None):
+    def __init__(self, path="new_pdf_int",document_directory=None):
         self.document_directory = document_directory
         self.vector_query_engines = {}
         self.path=path
@@ -60,6 +60,7 @@ class VectorStoreAndQueryEngine:
         "生成する際はどのような場合でもに英語ではなく日本語で答えること。\n"
         "answer the query.\n"
         "Query: {query_str}\n"
+        "英語ではなく日本語で答える事\n"
         "Answer: "
     )
         text_qa_template = PromptTemplate(text_qa_template_str)

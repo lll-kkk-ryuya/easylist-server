@@ -53,89 +53,53 @@ class QueryEngineManager:
     def setup_query_engine_tools(self):
         self.query_engine_tools = [
     QueryEngineTool(
-        query_engine=self.query_engines_dict["rikou12.pdf"],
+        query_engine=self.query_engines_dict['keirikou.pdf'],
         metadata=ToolMetadata(
             name="Engineering Department",
             description=(
-                "Provides comprehensive data excluding course information for the Engineering Department,\n "
-                "such as enrollment requirements, graduation criteria, and advancement conditions."
+                "Provides data for students in  the Engineering Department, "
             ),
         ),
     ),
     QueryEngineTool(
-        query_engine=self.query_engines_dict["houg12.pdf"],
+        query_engine=self.query_engines_dict['keihou.pdf'],
         metadata=ToolMetadata(
             name="Law Department",
             description=(
-                "Provides data for the 1st and 2nd year students in the Law Department, "
+                "Provides data for students in the Law Department, "
             ),
         ),
     ),
+
     QueryEngineTool(
-        query_engine=self.query_engines_dict["hou34.pdf"],
-        metadata=ToolMetadata(
-            name="Law Department",
-            description=(
-                "Provides data for the 3rd and 4th year students in the Law Department, "
-            ),
-        ),
-    ),
-    QueryEngineTool(
-        query_engine=self.query_engines_dict["keizai12.pdf"],
+        query_engine=self.query_engines_dict['keikei.pdf'],
         metadata=ToolMetadata(
             name="Economics Department",
             description=(
-                "Provides data for the 1st and 2nd year students in the Economics Department, "
+                "Provides data for students in the the Economics Department, "
             ),
         ),
     ),
     QueryEngineTool(
-        query_engine=self.query_engines_dict["keizai34.pdf"],
-        metadata=ToolMetadata(
-            name="Economics Department",
-            description=(
-                "Provides data for the 3rd and 4th year students in the Economics Department, "
-            ),
-        ),
-    ),
-    QueryEngineTool(
-        query_engine=self.query_engines_dict["bunn234.pdf"],
+        query_engine=self.query_engines_dict["keibunn.pdf"],
         metadata=ToolMetadata(
             name="Literature Department",
             description=(
-                "Provides data for the 2nd, 3rd, and 4th year students in the Literature Department, "
+                "Provides data for students in the Literature Department, "
             ),
         ),
     ),
     QueryEngineTool(
-        query_engine=self.query_engines_dict["bunn1.pdf"],
-        metadata=ToolMetadata(
-            name="Literature Department",
-            description=(
-                "Provides data for the 1st year students in the Literature Department, "
-            ),
-        ),
-    ),
-    QueryEngineTool(
-        query_engine=self.query_engines_dict["shou34.pdf"],
+        query_engine=self.query_engines_dict['keishou.pdf'],
         metadata=ToolMetadata(
             name="Commerce Department",
             description=(
-                "Provides data for the 3rd and 4th year students in the Commerce Department, "
+                "Provides data for students in the Commerce Department, "
             ),
         ),
     ),
     QueryEngineTool(
-        query_engine=self.query_engines_dict["shou12.pdf"],
-        metadata=ToolMetadata(
-            name="Commerce Department",
-            description=(
-                "Provides data for the 1st and 2nd year students in the Commerce Department, "
-            ),
-        ),
-    ),
-    QueryEngineTool(
-        query_engine=self.query_engines_dict["bunn1.pdf"],
+        query_engine=self.query_engines_dict["keishou.pdf"],
         metadata=ToolMetadata(
             name="If no specific department is specified (general case)",
             description=(
@@ -143,17 +107,21 @@ class QueryEngineManager:
             ),
         ),
     ),
-    
-    QueryEngineTool(query_engine=self.query_engines_dict['all_curce'],metadata=ToolMetadata(name="Course data",description=("具体的な授業情報。Course data: ID, campus, name, ,season,subjectName,field, term, schedule, mode, year, faculties, syllabusDetail,URL.""上記のdataは一つの授業に対しての情報である"),),),
-    
+    QueryEngineTool(query_engine=self.query_engines_dict['all_curce'],
+                    metadata=ToolMetadata(
+                        name="全ての授業データ",
+                        description=(
+                            "授業データ: コースID, キャンパス, 授業名, 学期,  時間割, 教授名, 形式(対面授業かオンライン授業か), 年度, 取得可能な学部, シラバスの詳細, URL。授業に関する時間割などの詳細は、こちらを参照してください。"
+                            ),),),
 ]
-        
+      
 
     async def query_engine(self):
+       
         llm = OpenAI(temperature=0.3, model="gpt-4-turbo",api_key=openai_api_key)
         summarizer = TreeSummarize(llm=llm, streaming=True, use_async=True)
         router_query_engine = RouterQueryEngine.from_defaults(
-            selector=LLMMultiSelector.from_defaults(llm = llm,max_outputs=2),
+            selector=LLMMultiSelector.from_defaults(llm = llm,max_outputs=4),
             query_engine_tools=self.query_engine_tools,
             summarizer=summarizer,
             verbose=True, 
