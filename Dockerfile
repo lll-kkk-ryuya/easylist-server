@@ -28,5 +28,6 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir "uvicorn[standard]>=0.18.3"
 
+COPY src/schema.py /usr/local/lib/python3.9/site-packages/llama_index/core/base/response/schema.py
 # コンテナ起動時に実行するコマンドを指定
 CMD sh -c "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8080} --log-level debug --loop asyncio"
