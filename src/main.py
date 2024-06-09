@@ -90,9 +90,10 @@ async def startup_event():
     
     query_gen_str = """\
 You are a helpful assistant that generates multiple search queries based on a \
-single input query. Generate {num_queries} search queries, one on each line, \
+single input query. Generate {num_queries} search queries, one on each line, 
+生徒の目線に立って生成を行うこと。\
 related to the following input query.\
-また、文末に"を教えて。"で終えれるよな文に変換するようにしなさい。生徒の目線に立って生成を行うこと。:
+また、文末に"を教えて。"で終えれるよな文に変換するようにしなさい。:
 Query: {query}
 Queries:
 **If the text is inappropriate, convert it to an appropriate text.**
