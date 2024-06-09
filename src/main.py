@@ -146,7 +146,7 @@ async def websocket_endpoint(websocket: WebSocket):
             #result = query_engine.chat(first_query)
             print(type(result))
             if isinstance(result, StreamingResponse):
-                for text in result.response_gen:
+                async for text in result.response_gen:
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
                     logging.debug(f"Sending streaming response: {reply_json_str}")
                     await websocket.send_text(reply_json_str)
