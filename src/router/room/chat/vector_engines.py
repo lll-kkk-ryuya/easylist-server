@@ -60,7 +60,7 @@ class VectorStoreAndQueryEngine:
         "生成する際はどのような場合でもに英語ではなく日本語で答えること。\n"
         "answer the query.\n"
         "Query: {query_str}\n"
-        "英語ではなく日本語で答える事\n"
+        "必ず,何がっても英語ではなく日本語で答える事\n"
         "Answer: "
     )
         text_qa_template = PromptTemplate(text_qa_template_str)
