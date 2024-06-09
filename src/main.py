@@ -146,7 +146,7 @@ async def websocket_endpoint(websocket: WebSocket):
             #result = query_engine.chat(first_query)
             print(type(result))
             if isinstance(result, StreamingResponse):
-                async for text in result.response_gen():
+                for text in result.response_gen:
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
                     logging.debug(f"Sending streaming response: {reply_json_str}")
                     await websocket.send_text(reply_json_str)
@@ -155,7 +155,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 logging.debug("All parts of the streaming response have been sent.")
 
             if isinstance(result, AsyncStreamingResponse):
-                async for text in result.async_response_gen():#デプロイする際はなぜか()が必要
+                async for text in result.async_response_gen:#デプロイする際はなぜか()が必要
                     reply_json_str = json.dumps({"id": message_id, "reply_from_bot": text}, ensure_ascii=False)
                     logging.debug(f"Sending streaming response: {reply_json_str}")
                     await websocket.send_text(reply_json_str)
