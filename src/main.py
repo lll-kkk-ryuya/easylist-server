@@ -93,13 +93,13 @@ You are a helpful assistant that generates multiple search queries based on a \
 single input query. Generate {num_queries} search queries, one on each line, 
 生徒の目線に立って生成を行うこと。\
 related to the following input query.\
-また、文末に"を教えて。"で終えれるよな文に変換するようにしなさい。:
+また、文末に"を教えて。"で終えれるよな文に変換するようにしなさい。\
 Query: {query}
 Queries:
 **If the text is inappropriate, convert it to an appropriate text.**
 """
     query_gen_prompt = PromptTemplate(query_gen_str)
-    query_service = QueryService(db_url,collection_names,table_name,tool_metadata) 
+    query_service = QueryService(db_url,collection_names,table_name) 
     await query_service.setup_engines()
     query_engine = await query_service.query_engine()
     print("起動")
@@ -138,7 +138,7 @@ async def websocket_endpoint(websocket: WebSocket):
             message_id = data['id']
             query_str = data.get('content')
             logging.debug(f"Processing query: {query_str}")
-            llm_query = OpenAI(model="gpt-3.5-turbo", api_key=openai_api_key)
+            llm_query = OpenAI(model="gpt-4", api_key=openai_api_key)
             queries = generate_queries(query_str, llm_query)
             first_query = QueryBundle(query_str=queries[1])
             result = await query_engine._aquery(first_query)

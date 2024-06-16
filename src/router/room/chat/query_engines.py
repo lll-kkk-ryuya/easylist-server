@@ -107,18 +107,13 @@ class QueryEngineManager:
             ),
         ),
     ),
-    QueryEngineTool(query_engine=self.query_engines_dict['all_curce'],
-                    metadata=ToolMetadata(
-                        name="全ての授業データ",
-                        description=(
-                            "授業データ: コースID, キャンパス, 授業名, 学期,  時間割, 教授名, 形式(対面授業かオンライン授業か), 年度, 取得可能な学部, シラバスの詳細, URL。授業に関する時間割などの詳細は、こちらを参照してください。"
-                            ),),),
+    #QueryEngineTool(query_engine=self.query_engines_dict['all_curce'],metadata=ToolMetadata(name="全ての授業データ",description=("授業データ: コースID, キャンパス, 授業名, 学期,  時間割, 教授名, 形式(対面授業かオンライン授業か), 年度, 取得可能な学部, シラバスの詳細, URL。授業に関する時間割などの詳細は、こちらを参照してください。"),),),
 ]
       
 
     async def query_engine(self):
        
-        llm = OpenAI(temperature=0.3, model="gpt-4-turbo",api_key=openai_api_key)
+        llm = OpenAI(temperature=0.3, model="gpt-3.5-turbo",api_key=openai_api_key)
         summarizer = TreeSummarize(llm=llm, streaming=True, use_async=True)
         router_query_engine = RouterQueryEngine.from_defaults(
             selector=LLMMultiSelector.from_defaults(llm = llm,max_outputs=4),
