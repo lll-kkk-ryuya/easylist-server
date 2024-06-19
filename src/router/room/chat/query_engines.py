@@ -112,15 +112,27 @@ class QueryEngineManager:
       
 
     async def query_engine(self):
-       
         llm = OpenAI(temperature=0.3, model="gpt-3.5-turbo",api_key=openai_api_key)
-        summarizer = TreeSummarize(llm=llm, streaming=True, use_async=True)
+        DEFAULT_TREE_SUMMARIZE_TMPL = (
+    "以下に複数の情報源からのコンテキスト情報があります。\n"
+    "---------------------\n"
+    "{context_str}\n"
+    "---------------------\n"
+    "複数の情報源からの情報に基づいて、事前知識を使わずに以下の質問に答えてください。\n"
+    "答える際は日本語で答えるようにしてください。\n"
+    "質問: {query_str}\n"
+    "回答: "
+)
+        summary_template=PromptTemplate(
+            template = DEFAULT_TREE_SUMMARIZE_TMPL,
+            prompt_type=PromptType.SUMMARY
+        )
+        summarizer = TreeSummarize(llm=llm, streaming=True, use_async=True,summary_template=summary_template)
         router_query_engine = RouterQueryEngine.from_defaults(
             selector=LLMMultiSelector.from_defaults(llm = llm,max_outputs=4),
             query_engine_tools=self.query_engine_tools,
             summarizer=summarizer,
             verbose=True, 
-            #service_context=self.service_context
             )
         
         return router_query_engine
