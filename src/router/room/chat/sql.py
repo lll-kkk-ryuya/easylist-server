@@ -78,7 +78,7 @@ class NLSQLQueryEngineManager:
 
     def create_nlsql_query_engine(self, table_name):
         engine = create_engine('sqlite:///example.db', echo=True)
-        llm = OpenAI(temperature=0.1, model="gpt-4",api_key=openai_api_key)
+        llm = OpenAI(temperature=0.1, model="gpt-3.5-turbo",api_key=openai_api_key)
         service_context = ServiceContext.from_defaults(llm=llm)
         # Initialize SQLDatabase and NLSQLTableQueryEngine
         sql_database = SQLDatabase(engine, include_tables=[table_name])

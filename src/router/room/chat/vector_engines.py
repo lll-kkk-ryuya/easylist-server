@@ -46,7 +46,7 @@ class VectorStoreAndQueryEngine:
             index = VectorStoreIndex(nodes=nodes, storage_context=storage_context, service_context=service_context)
 
 
-    def initialize_vector_query_engine(self, index, model="gpt-4", temperature=0.1, similarity_top_k=5):
+    def initialize_vector_query_engine(self, index, model="gpt-3.5-turbo", temperature=0.1, similarity_top_k=5):
         llm = OpenAI(model=model, temperature=temperature,api_key=openai_api_key )
         service_context = ServiceContext.from_defaults(llm=llm)
         vector_retriever = VectorIndexRetriever(index=index, similarity_top_k=similarity_top_k)
@@ -60,7 +60,6 @@ class VectorStoreAndQueryEngine:
         "生成する際はどのような場合でもに英語ではなく日本語で答えること。\n"
         "answer the query.\n"
         "Query: {query_str}\n"
-        "必ず,何がっても英語ではなく日本語で答える事\n"
         "Answer: "
     )
         text_qa_template = PromptTemplate(text_qa_template_str)
@@ -80,7 +79,7 @@ class VectorStoreAndQueryEngine:
             )
         return vector_query_engine
 
-    def add_vector_query_engine(self, collection_name, model="gpt-4", temperature=0.4, similarity_top_k=5):      
+    def add_vector_query_engine(self, collection_name, model="gpt-3.5-turbo", temperature=0.4, similarity_top_k=5):      
         document_processor = DocumentProcessor(directory=self.document_directory, model=model)  
         nodes = document_processor.process_documents()
         _,index = self.initialize_vector_store_index(collection_name,nodes)
